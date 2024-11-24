@@ -7,3 +7,8 @@ class Group:
         self.destination = destination
         self.turns_till_arrival = turns_till_arrival
         self.__position = position
+
+    @property
+    def position(self):
+        return self.__position
+
