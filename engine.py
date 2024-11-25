@@ -1,28 +1,77 @@
+from webbrowser import Galeon
+import copy
+
+from wheel.cli.convert import convert
+
 from capital_city import Capital
 from city import City
+from game import Game
 from group import Group
 from player import Player
 from PIL import Image, ImageDraw, ImageFont
-
+from bot import Bot
 
 class Engine:
-    def __init__(self, player: Player, enemy: Player) -> None:
+    def __init__(self, player: Player,player_bot: Bot, enemy: Player, enemy_bot: Bot) -> None:
         self.player = player
+        self.player_bot = player_bot
+        self.player_actions = []
         self.enemy = enemy
+        self.enemy_bot = enemy_bot
+        self.enemy_actions = []
         self.winner = None
         self.turn = 1
 
+    def create_game_player(self) -> Game:
+        return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy))
+
+    def create_game_enemy(self) -> Game:
+        return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player))
+
+    def convert_city(self, city: City):
+        cities = self.player.cities + [self.player.capital_city]
+        if city in cities:
+            return cities[cities.index(city)]
+        cities = self.enemy.cities + [self.enemy.capital_city]
+        if city in cities:
+            return cities[cities.index(city)]
+
+    def convert_action(self, action):
+        action[0] = self.convert_city(action[0])
+        if action[1] == "send":
+            action[2] = self.convert_city(action[2])
+        return action
+
+
+    def do_turn(self) -> None:
+        player_game = self.create_game_player()
+        self.player_bot.do_turn(player_game)
+        player_actions = [city.action for city in player_game.player.cities]
+        player_actions.append(player_game.player.capital_city.action)
+        self.player_actions = [self.convert_action(action) for action in player_actions if action is not None]
+
+        enemy_game = self.create_game_enemy()
+        self.enemy_bot.do_turn(enemy_game)
+        enemy_actions = [city.action for city in enemy_game.player.cities]
+        enemy_actions.append(enemy_game.player.capital_city.action)
+        self.enemy_actions = [self.convert_action(action) for action in enemy_actions if action is not None]
+
     def update(self) -> None:
+        self.do_turn()
+
         self.player.update_groups()
         self.enemy.update_groups()
-        self.player.update_cities()
-        self.enemy.update_cities()
+        self.player.update_cities(self.player_actions)
+        self.enemy.update_cities(self.enemy_actions)
         self.player.update_lost_cities()
         self.enemy.update_lost_cities()
         self.player.update_conquered_cities()
         self.enemy.update_conquered_cities()
+
         if self.player.capital_city is None:
             self.winner = "enemy"
+            if self.enemy.capital_city is None:
+                self.winner = "draw"
         elif self.enemy.capital_city is None:
             self.winner = "player"
         if self.turn == 300 and self.winner is None:

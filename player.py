@@ -1,3 +1,5 @@
+from math import acosh
+
 from city import City
 from capital_city import Capital
 from group import Group
@@ -9,6 +11,14 @@ class Player:
         self.groups = groups
         self.conquered_cities = []
         self.lost_cities = []
+
+    def convert_actions(self, action):
+        cities = self.cities + [self.capital_city]
+        if action[0] not in cities:
+            return None
+        action[0] = cities.index(action[0])
+
+
 
     def update_groups(self) -> None:
         for group in self.groups:
@@ -22,12 +32,31 @@ class Player:
                         self.conquered_cities.append(group.destination)
                 self.groups.remove(group)
 
-    def update_cities(self) -> None:
+    def update_cities(self, actions) -> None:
         for city in self.cities:
             if city.people_amount < 0:
                 self.lost_cities.append(city)
             else:
                 city.update()
+        for action in actions:
+            try:
+                cities = self.cities + [self.capital_city]
+                city = cities[cities.index(action[0])]
+                if action[1] == "upgrade":
+                    if city.can_upgrade():
+                        city.people_amount -= city.get_upgrade_cost()
+                        city.level += 1
+                elif action[1] == "send":
+                    try:
+                        if city.can_send_groups(action[3]) and isinstance(action[2], City):
+                            city.people_amount -= action[3]
+                            self.groups.append(Group(action[3], city, action[2], city.position))
+                    except Exception:
+                        pass
+
+            except ValueError:
+                pass
+
         if self.capital_city.people_amount < 0:
             self.capital_city = None
         else:

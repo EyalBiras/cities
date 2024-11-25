@@ -12,6 +12,19 @@ class City:
         self.__action = None
         self.__position = position
 
+
+    @property
+    def level(self):
+        return self.__level
+
+    @level.setter
+    def level(self, value):
+        level = value
+
+    @property
+    def action(self):
+        return self.__action
+
     @property
     def people_amount(self):
         return self.__people_amount
@@ -19,7 +32,6 @@ class City:
     @people_amount.setter
     def people_amount(self, value):
         self.__people_amount = value
-
 
     @property
     def position(self):
@@ -29,14 +41,14 @@ class City:
         return np.linalg.norm(destination.position - self.position)
 
     def get_turns_till_arrival(self, destination: City):
-        return np.ceil(self.get_distance_to(destination) / 4)
+        return np.ceil(self.get_distance_to(destination) / 20)
 
     def can_send_groups(self, people_amount: int) -> bool:
         return people_amount < self.__people_amount
 
     def send_group(self, destination: Self, people_amount: int) -> None:
         if self.can_send_groups(people_amount):
-            self.__action = ["send", self, destination, people_amount]
+            self.__action = [self,"send", destination, people_amount]
 
     def get_upgrade_cost(self) -> int:
         return 20
@@ -46,7 +58,10 @@ class City:
 
     def upgrade(self):
         if self.can_upgrade():
-            self.__action = ["upgrade"]
+            self.__action = [self, "upgrade"]
 
     def update(self) -> None:
         self.__people_amount += self.__level
+
+    def __eq__(self, other: City):
+        return np.array_equal(self.position, other.position)

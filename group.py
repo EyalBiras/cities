@@ -7,10 +7,8 @@ class Group:
         self.source = source
         self.destination = destination
         self.turns_till_arrival = self.source.get_turns_till_arrival(destination)
-        self.turns_till_arrival = 38
-        print(self.turns_till_arrival)
         self.__position = list(position)
-        self.speed = 4
+        self.speed = 20
         self.__direction = (self.destination.position - self.source.position) / self.source.get_distance_to(destination)
 
 
