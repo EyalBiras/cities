@@ -14,7 +14,7 @@ class Player:
         for group in self.groups:
             group.update()
             if group.turns_till_arrival == 0:
-                if group.destination in self.cities:
+                if group.destination in self.cities or group.destination is self.capital_city:
                     group.destination.people_amount += group.people_amount
                 else:
                     group.destination.people_amount -= group.people_amount
@@ -28,7 +28,10 @@ class Player:
                 self.lost_cities.append(city)
             else:
                 city.update()
-        self.capital_city.update()
+        if self.capital_city.people_amount < 0:
+            self.capital_city = None
+        else:
+            self.capital_city.update()
 
     def update_lost_cities(self) -> None:
         for city in self.lost_cities:
