@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from typing import Self
 
+import numpy as np
+
 
 class City:
-    def __init__(self, people_amount: int, level: int, position: tuple[int, int]) -> None:
+    def __init__(self, people_amount: int, level: int, position: np.ndarray[int]) -> None:
         self.__people_amount = people_amount
         self.__level = level
         self.__action = None
@@ -14,13 +16,20 @@ class City:
     def people_amount(self):
         return self.__people_amount
 
+    @people_amount.setter
+    def people_amount(self, value):
+        self.__people_amount = value
+
 
     @property
     def position(self):
         return self.__position
 
-    def get_turns_till_arrival(self, destination: City) -> int:
-        return ((self.__position[0] - destination.position[0]) ** 2 + (self.__position[1] - destination.position[1]) ** 2)**0.5
+    def get_distance_to(self, destination: City):
+        return np.linalg.norm(destination.position - self.position)
+
+    def get_turns_till_arrival(self, destination: City):
+        return np.ceil(self.get_distance_to(destination) / 4)
 
     def can_send_groups(self, people_amount: int) -> bool:
         return people_amount < self.__people_amount
@@ -38,3 +47,6 @@ class City:
     def upgrade(self):
         if self.can_upgrade():
             self.__action = ["upgrade"]
+
+    def update(self) -> None:
+        self.__people_amount += self.__level

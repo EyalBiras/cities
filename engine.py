@@ -10,33 +10,43 @@ class Engine:
         self.player = player
         self.enemy = enemy
 
+    def update(self) -> None:
+        self.player.update_groups()
+        self.enemy.update_groups()
+        self.player.update_cities()
+        self.enemy.update_cities()
+        self.player.update_lost_cities()
+        self.enemy.update_lost_cities()
+        self.player.update_conquered_cities()
+        self.enemy.update_conquered_cities()
+
+    def draw_player(self, player: Player,
+                    draw: ImageDraw,
+                    font: ImageFont,
+                    city_color,
+                    capital_color,
+                    group_color) -> None:
+        for city in player.cities:
+            draw.rectangle([city.position[0], city.position[1], city.position[0] + 50, city.position[1] + 50],
+                           outline=city_color, width=5)
+            draw.text((city.position[0] + 20, city.position[1] + 20), f"{city.people_amount}", fill="black", font=font)
+        for group in player.groups:
+            draw.rectangle([group.position[0], group.position[1], group.position[0] + 10, group.position[1] + 10],
+                           outline=group_color, width=5)
+            draw.text((group.position[0], group.position[1]), f"{group.people_amount}", fill="cyan", font=font)
+        capital = player.capital_city
+        draw.rectangle([capital.position[0], capital.position[1], capital.position[0] + 50, capital.position[1] + 50],
+                       outline=capital_color, width=10)
+        draw.text((capital.position[0] + 20, capital.position[1] + 20), f"{capital.people_amount}", fill="black",
+                  font=font)
+
     def draw(self) -> Image:
         image = Image.new('RGB', (1000, 1000), color='white')
         draw = ImageDraw.Draw(image)
         font = ImageFont.load_default()
 
-        for city in self.player.cities:
-            draw.rectangle([city.position[0], city.position[1], city.position[0] + 50, city.position[1] + 50], outline="blue", width=5)
-            draw.text((city.position[0] + 20, city.position[1] + 20), f"{city.people_amount}", fill="black", font=font)
-        for group in self.player.groups:
-            draw.rectangle([group.position[0], group.position[1], group.position[0] + 10, group.position[1] + 10],
-                           outline="cyan", width=5)
-            draw.text((group.position[0], group.position[1]), f"{group.people_amount}", fill="cyan", font=font)
-        capital = self.player.capital_city
-        draw.rectangle([capital.position[0], capital.position[1], capital.position[0] + 50, capital.position[1] + 50], outline="yellow", width=10)
-        draw.text((capital.position[0] + 20, capital.position[1] + 20), f"{capital.people_amount}", fill="black", font=font)
-
-        for city in self.enemy.cities:
-            draw.rectangle([city.position[0], city.position[1], city.position[0] + 50, city.position[1] + 50], outline="red", width=5)
-            draw.text((city.position[0] + 20, city.position[1] + 20), f"{city.people_amount}", fill="black", font=font)
-
-        for group in self.enemy.groups:
-            draw.rectangle([group.position[0], group.position[1], group.position[0] + 10, group.position[1] + 10],
-                           outline="pink", width=5)
-            draw.text((group.position[0], group.position[1]), f"{group.people_amount}", fill="pink", font=font)
-
-        capital = self.enemy.capital_city
-        draw.rectangle([capital.position[0], capital.position[1], capital.position[0] + 50, capital.position[1] + 50], outline="black", width=10)
-        draw.text((capital.position[0] + 20, capital.position[1] + 20), f"{capital.people_amount}", fill="black", font=font)
+        self.draw_player(self.player, draw, font, "blue", "yellow", "cyan")
+        self.draw_player(self.enemy, draw, font, "red", "black", "pink")
+        self.update()
 
         return image

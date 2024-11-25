@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+from time import perf_counter
 from capital_city import Capital
 from city import City
 from engine import Engine
@@ -47,17 +47,19 @@ def images_to_video_from_objects(image_objects, output_video_path, fps=1, size=N
     cv2.destroyAllWindows()
     print(f"Video saved to: {output_video_path}")
 
-p1_cities = [City(1,1, (100,100)), City(1,1, (200,100)), City(1,1, (300,100))]
-p2_cities = [City(1,1, (100,300)), City(1,1, (200,300)), City(1,1, (300,300))]
-p1_capital = Capital(1,1,(0,100))
-p2_capital = Capital(1,1,(0,300))
-p1_groups = [Group(1,None, None, 1, (100,150)), Group(1,None, None, 1, (200,150))]
-p2_groups = [Group(1,None, None, 1, (100,250)), Group(1,None, None, 1, (200,250))]
+t1 = perf_counter()
+p1_cities = [City(1,1, np.array((100,100))), City(1,1, np.array((200,100))), City(1,1, np.array((300,100)))]
+p2_cities = [City(1,1, np.array((100,300))), City(1,1, np.array((200,300))), City(1,1, np.array((300,300)))]
+p1_capital = Capital(1,1,np.array((0,100)))
+p2_capital = Capital(1,1,np.array((0,300)))
+p1_groups = [Group(100,p1_cities[0], p2_cities[0], np.array((100,150))), Group(1,p1_cities[1], p2_cities[1], np.array((200,150)))]
+p2_groups = [Group(100,p2_cities[0], p1_cities[0], np.array((100,250))), Group(1,p2_cities[1], p1_cities[1], np.array((200,250)))]
 
 
 p1 = Player(p1_cities, p1_capital, p1_groups)
 p2 = Player(p2_cities, p2_capital, p2_groups)
 
 e = Engine(p1, p2)
-i = [e.draw(), e.draw(), e.draw(), e.draw()]
+i = [e.draw() for j in range(50)]
 images_to_video_from_objects(i, "a.mp4")
+print(perf_counter() - t1)
