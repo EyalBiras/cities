@@ -2,57 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Group Management App</title>
+    <title>Login</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div id="app">
-        <div id="loginForm">
-            <h2>Login</h2>
-            <div id="loginError" style="color: red;"></div>
-            <input type="text" id="loginUsername" placeholder="Username" required>
-            <input type="password" id="loginPassword" placeholder="Password" required>
-            <button onclick="login()">Login</button>
-            <p>Don't have an account? <a href="#" onclick="showSignup()">Sign up</a></p>
-        </div>
-
-        <div id="signupForm" style="display: none;">
-            <h2>Sign Up</h2>
-            <div id="signupError" style="color: red;"></div>
-            <input type="text" id="signupUsername" placeholder="Username" required>
-            <input type="password" id="signupPassword" placeholder="Password" required>
-            <button onclick="signup()">Sign Up</button>
-            <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
-        </div>
-
-        <div id="dashboard" style="display: none;">
-            <h2>Dashboard</h2>
-            <div id="userInfo"></div>
-
-            <div id="availableGroupsSection" style="display: none;">
-                <h3>Available Groups</h3>
-                <div id="availableGroupsList"></div>
-            </div>
-
-            <div id="groupSection">
-                <h3>Group Management</h3>
-                <div id="createGroupForm">
-                    <input type="text" id="newGroupName" placeholder="Group Name">
-                    <button onclick="createNewGroup()">Create Group</button>
-                </div>
-                <button onclick="leaveCurrentGroup()">Leave Group</button>
-            </div>
-
-            <div id="joinRequests" style="display: none;">
-                <h3>Join Requests</h3>
-                <ul id="requestsList"></ul>
-            </div>
-
-            <button onclick="logout()">Logout</button>
-        </div>
+    <div id="loginForm">
+        <h2>Login</h2>
+        <div id="loginError" style="color: red;"></div>
+        <input type="text" id="loginUsername" placeholder="Username" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+        <p>Don't have an account? <a href="signup.html">Sign up</a></p>
     </div>
-
     <script src="/static/api.js"></script>
-    <script src="/static/app.js"></script>
+    <script src="/static/index.js"></script>
 </body>
 </html>

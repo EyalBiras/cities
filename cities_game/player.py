@@ -1,8 +1,6 @@
-from math import acosh
-
-from city import City
-from capital_city import Capital
-from group import Group
+from cities_game.city import City
+from cities_game.capital_city import Capital
+from cities_game.group import Group
 
 class Player:
     def __init__(self, cities: list[City], capital_city: Capital, groups: list[Group]) -> None:

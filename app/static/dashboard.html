@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="dashboard">
+        <h2>Dashboard</h2>
+        <div id="userInfo"></div>
+
+        <div id="availableGroupsSection" style="display: none;">
+            <h3>Available Groups</h3>
+            <div id="availableGroupsList"></div>
+        </div>
+
+        <div id="groupSection">
+            <h3>Group Management</h3>
+            <div id="createGroupForm">
+                <input type="text" id="newGroupName" placeholder="Group Name">
+                <button onclick="createNewGroup()">Create Group</button>
+            </div>
+            <button onclick="leaveCurrentGroup()">Leave Group</button>
+        </div>
+
+        <div id="joinRequests" style="display: none;">
+            <h3>Join Requests</h3>
+            <ul id="requestsList"></ul>
+        </div>
+
+        <button onclick="logout()">Logout</button>
+    </div>
+    <script src="/static/api.js"></script>
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>

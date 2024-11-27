@@ -1,34 +1,3 @@
-// Function to handle login form submission
-async function login() {
-  const username = document.getElementById('loginUsername').value;
-  const password = document.getElementById('loginPassword').value;
-  const loginError = document.getElementById('loginError');
-
-  try {
-    const token = await loginUser(username, password);
-    localStorage.setItem('token', token);
-    showDashboard();
-  } catch (err) {
-    loginError.textContent = err.message;
-  }
-}
-
-// Function to handle signup form submission
-async function signup() {
-  const username = document.getElementById('signupUsername').value;
-  const password = document.getElementById('signupPassword').value;
-  const signupError = document.getElementById('signupError');
-
-  try {
-    await signupUser(username, password);
-    alert('User created successfully! Please log in.');
-    document.getElementById('signupUsername').value = '';
-    document.getElementById('signupPassword').value = '';
-  } catch (err) {
-    signupError.textContent = err.message;
-  }
-}
-
 // Helper function to fetch user info
 async function fetchUserInfo() {
   const token = localStorage.getItem('token');
@@ -158,32 +127,17 @@ async function acceptJoinRequest(username) {
   }
 }
 
-// Function to show the dashboard after login
-function showDashboard() {
-  document.getElementById('loginForm').style.display = 'none';
-  document.getElementById('signupForm').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  updateDashboard();
-}
-
 // Function to handle logout
 function logout() {
   localStorage.removeItem('token');
   window.location.reload();
-}
-function showSignup() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('signupForm').style.display = 'block';
+  window.location.href = "/";
 }
 
-function showLogin() {
-    document.getElementById('loginForm').style.display = 'block';
-    document.getElementById('signupForm').style.display = 'none';
-}
-// Check if the user is logged in on page load
+// Initial setup: Check if user is logged in and update dashboard
 window.onload = () => {
   const token = localStorage.getItem('token');
   if (token) {
-    showDashboard();
+    updateDashboard();
   }
 };

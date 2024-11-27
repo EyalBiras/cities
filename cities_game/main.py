@@ -1,13 +1,12 @@
 import cv2
 import numpy as np
 from time import perf_counter
-from capital_city import Capital
-from city import City
-from engine import Engine
-from game import Game
-from group import Group
+from cities_game.capital_city import Capital
+from cities_game.city import City
+from cities_game.engine import Engine
+from cities_game.game import Game
 from player import Player
-from bot import Bot
+from cities_game.bot import Bot
 
 def images_to_video_from_objects(image_objects, output_video_path, fps=1, size=None):
     if not image_objects:
@@ -76,5 +75,5 @@ m = M()
 g = G()
 e = Engine(p1,m, p2,m)
 i = e.play()
-images_to_video_from_objects(i, "a.mp4")
+images_to_video_from_objects(i, "../a.mp4")
 print(perf_counter() - t1)
