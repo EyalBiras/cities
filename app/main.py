@@ -42,10 +42,14 @@ async def get_dashboard_page():
         return HTMLResponse(content=f.read())
 
 @app.get("/files.html", response_class=HTMLResponse)
-async def get_dashboard_page():
+async def get_files_page():
     with open("static/files.html") as f:
         return HTMLResponse(content=f.read())
 
+@app.get("/groups.html", response_class=HTMLResponse)
+async def get_groups_page():
+    with open("static/groups.html") as f:
+        return HTMLResponse(content=f.read())
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=900)

@@ -13,29 +13,6 @@ async function fetchUserInfo() {
 }
 
 // Function to display available groups
-async function displayAvailableGroups() {
-    try {
-        const groups = await getGroups(); // API to fetch groups
-        const groupsList = document.getElementById('availableGroupsList');
-        groupsList.innerHTML = '';
-
-        const user = await fetchUserInfo();
-        if (!user.group) {
-            groups.forEach((group) => {
-                const groupItem = document.createElement('div');
-                groupItem.classList.add('group-item');
-                groupItem.innerHTML = `
-                    <span>${group.name}</span>
-                    <button onclick="requestToJoinGroup('${group.name}')">Join</button>
-                `;
-                groupsList.appendChild(groupItem);
-            });
-            document.getElementById('availableGroupsSection').style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Error fetching groups:', error);
-    }
-}
 
 // Function to update dashboard with user and group information
 async function updateDashboard() {
@@ -61,7 +38,6 @@ async function updateDashboard() {
           requestsList.appendChild(li);
         });
         joinRequestsSection.style.display = 'block';
-        document.getElementById('availableGroupsSection').style.display = 'none';
       } catch (error) {
         console.error('Error fetching join requests:', error);
         joinRequestsSection.style.display = 'none';
@@ -90,16 +66,6 @@ async function createNewGroup() {
   }
 }
 
-// Function to request to join a group
-async function requestToJoinGroup(groupName) {
-  try {
-    await sendJoinRequest(groupName);
-    alert('Join request sent successfully!');
-    displayAvailableGroups(); // Refresh the groups list
-  } catch (err) {
-    alert(err.message);
-  }
-}
 
 // Function to leave current group
 async function leaveCurrentGroup() {
