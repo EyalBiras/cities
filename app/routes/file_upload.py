@@ -14,6 +14,10 @@ MAX_SIZE = ONE_MEGABYTE
 MAX_SIZE_STR = "1mb"
 MAX_AMOUNT_OF_FILES = 40
 router = APIRouter()
+BASE_PATH = Path("../groups")
+
+def get_group_directory(group: str) -> Path:
+    return BASE_PATH / Path(group)
 
 @router.post("/uploadfile/")
 async def create_upload_file(
@@ -40,7 +44,7 @@ async def create_upload_file(
                                 detail=f"Total size of files exceeds maximum size of {MAX_SIZE_STR}")
 
     for file in files:
-        file_path = Path(current_user.group) / file.filename
+        file_path = get_group_directory(current_user.group) / file.filename
 
         file_path.parent.mkdir(parents=True, exist_ok=True)
         with open(file_path, "wb") as f:
@@ -60,7 +64,7 @@ async def download_file(
         raise HTTPException(status_code=400,
                             detail=f"You need to be in a group inorder to download files")
 
-    file_path = Path(current_user.group) / filename
+    file_path = get_group_directory(current_user.group) / filename
     if not file_path.is_file():
         raise HTTPException(status_code=404, detail="File not found.")
 
@@ -76,7 +80,7 @@ async def download_all_files(
         raise HTTPException(status_code=400,
                             detail=f"You need to be in a group inorder to download files")
 
-    group_directory = Path(current_user.group)
+    group_directory = get_group_directory(current_user.group)
 
     if not group_directory.exists():
         raise HTTPException(status_code=404, detail="No files have been uploaded")
@@ -101,7 +105,7 @@ async def get_files(
         raise HTTPException(status_code=400,
                             detail=f"You need to be in a group inorder to download files")
 
-    group_directory = Path(current_user.group)
+    group_directory = get_group_directory(current_user.group)
     if not group_directory.exists():
         return []
     files = []

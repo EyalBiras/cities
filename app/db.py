@@ -1,10 +1,10 @@
 from app.models import Group
 
 users_db = {
-    "johndoe": {
-        "username": "johndoe",
+    "Admin": {
+        "username": "Admin",
         "group": None,
-        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+        "hashed_password": "$2b$12$LI728mCmmOOwQlK8uRDE2.U95kvtdIv/SSYWNfHI.bO5HOQ3ZnJ4K",
         "disabled": False
     }
 }

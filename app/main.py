@@ -5,7 +5,7 @@ from app.models import User, UserInDB, Group, Token, TokenData
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, status
 from app.db import users_db, groups_db, get_group_by_name, get_user
-from app.routes import auth, group, file_upload
+from app.routes import auth, group, file_upload, admin
 from app.routes.auth import get_current_active_user
 # to get a string like this run:
 # openssl rand -hex 32
@@ -15,6 +15,7 @@ app = FastAPI()
 app.include_router(auth.router)
 app.include_router(group.router)
 app.include_router(file_upload.router)
+app.include_router(admin.router)
 app.mount("/static", StaticFiles(directory=r"C:\Users\user\PycharmProjects\cities\app\static"), name="static")
 
 
@@ -49,6 +50,11 @@ async def get_files_page():
 @app.get("/groups.html", response_class=HTMLResponse)
 async def get_groups_page():
     with open("static/groups.html") as f:
+        return HTMLResponse(content=f.read())
+
+@app.get("/admin.html", response_class=HTMLResponse)
+async def get_admin_page():
+    with open("static/admin.html") as f:
         return HTMLResponse(content=f.read())
 
 if __name__ == "__main__":

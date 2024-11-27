@@ -89,6 +89,7 @@ async def signup(user: UserCreate):
             detail="Username already registered"
         )
     set_user(user.username, get_password_hash(user.password))
+    print(get_password_hash(user.password))
     return {"massage": "User created successfully"}
 
 @router.post("/token")
