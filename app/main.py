@@ -31,5 +31,15 @@ async def get_home_page():
     with open("static/index.html") as f:
         return HTMLResponse(content=f.read())
 
+@app.get("/signup.html", response_class=HTMLResponse)
+async def get_signup_page():
+    with open("static/signup.html") as f:
+        return HTMLResponse(content=f.read())
+
+@app.get("/dashboard.html", response_class=HTMLResponse)
+async def get_dashboard_page():
+    with open("static/dashboard.html") as f:
+        return HTMLResponse(content=f.read())
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=900)

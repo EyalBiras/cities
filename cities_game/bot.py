@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from game import Game
+from cities_game.game import Game
 
 class Bot(ABC):
     @abstractmethod

@@ -72,7 +72,7 @@ async def download_file(
 @router.get("/download_all/")
 async def download_all_files(
     current_user: Annotated[User, Depends(get_current_active_user)],
-    background_tasks:BackgroundTasks):
+    background_tasks: BackgroundTasks):
     if current_user.group is None:
         raise HTTPException(status_code=400,
                             detail=f"You need to be in a group inorder to download files")
@@ -93,6 +93,22 @@ async def download_all_files(
     background_tasks.add_task(delete_file, zip_file_path)
 
     return FileResponse(zip_file_path, media_type="application/zip", filename=zip_filename)
+
+@router.get("/list_all")
+async def get_files(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+):
+    if current_user.group is None:
+        raise HTTPException(status_code=400,
+                            detail=f"You need to be in a group inorder to download files")
+
+    group_directory = Path(current_user.group)
+    if not group_directory.exists():
+        return []
+    files = []
+    for file_path in group_directory.rglob("*"):
+        files.append(file_path)
+    return files
 
 def delete_file(file_path: Path):
     file_path.unlink()

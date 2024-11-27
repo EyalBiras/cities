@@ -1,23 +1,32 @@
-from webbrowser import Galeon
 import copy
+import threading
+import time
+from asyncio import timeout
 
-from wheel.cli.convert import convert
-
-from capital_city import Capital
-from city import City
-from game import Game
-from group import Group
-from player import Player
+from cities_game.city import City
+from cities_game.game import Game
+from cities_game.player import Player
 from PIL import Image, ImageDraw, ImageFont
-from bot import Bot
+from cities_game.bot import Bot
+
+TIME_LIMIT = 2
 
 class Engine:
-    def __init__(self, player: Player,player_bot: Bot, enemy: Player, enemy_bot: Bot) -> None:
+    def __init__(self,
+                 player: Player,
+                 player_bot: Bot,
+                 player_name: str,
+                 enemy: Player,
+                 enemy_bot: Bot,
+                 enemy_name: str) -> None:
         self.player = player
         self.player_bot = player_bot
+        self.player_name = player_name
         self.player_actions = []
+        self.player_time = 0
         self.enemy = enemy
         self.enemy_bot = enemy_bot
+        self.enemy_name = enemy_name
         self.enemy_actions = []
         self.winner = None
         self.turn = 1
@@ -42,19 +51,32 @@ class Engine:
             action[2] = self.convert_city(action[2])
         return action
 
-
     def do_turn(self) -> None:
         player_game = self.create_game_player()
-        self.player_bot.do_turn(player_game)
-        player_actions = [city.action for city in player_game.player.cities]
-        player_actions.append(player_game.player.capital_city.action)
-        self.player_actions = [self.convert_action(action) for action in player_actions if action is not None]
+        try:
+            player_turn = threading.Thread(target=self.player_bot.do_turn, args=[player_game])
+            player_turn.start()
+            t_start = time.perf_counter()
+            player_turn.join(timeout=TIME_LIMIT)
+            t_end = time.perf_counter()
+            self.player_time += t_end - t_start
+            player_actions = [city.action for city in player_game.player.cities]
+            player_actions.append(player_game.player.capital_city.action)
+            self.player_actions = [self.convert_action(action) for action in player_actions if action is not None]
+        except Exception as e:
+            self.winner = "enemy"
+            return
 
         enemy_game = self.create_game_enemy()
-        self.enemy_bot.do_turn(enemy_game)
-        enemy_actions = [city.action for city in enemy_game.player.cities]
-        enemy_actions.append(enemy_game.player.capital_city.action)
-        self.enemy_actions = [self.convert_action(action) for action in enemy_actions if action is not None]
+        try:
+            self.enemy_bot.do_turn(enemy_game)
+            enemy_actions = [city.action for city in enemy_game.player.cities]
+            enemy_actions.append(enemy_game.player.capital_city.action)
+            self.enemy_actions = [self.convert_action(action) for action in enemy_actions if action is not None]
+        except Exception as e:
+            self.winner = "player"
+            return
+
 
     def update(self) -> None:
         self.do_turn()
@@ -68,7 +90,7 @@ class Engine:
         self.player.update_conquered_cities()
         self.enemy.update_conquered_cities()
 
-        if self.player.capital_city is None:
+        if self.player.capital_city is None or self.player_time > TIME_LIMIT:
             self.winner = "enemy"
             if self.enemy.capital_city is None:
                 self.winner = "draw"
@@ -100,8 +122,9 @@ class Engine:
             draw.text((group.position[0], group.position[1]), f"{group.people_amount}", fill="cyan", font=font)
         capital = player.capital_city
         if capital:
-            draw.rectangle([capital.position[0], capital.position[1], capital.position[0] + 50, capital.position[1] + 50],
-                           outline=capital_color, width=10)
+            draw.rectangle(
+                [capital.position[0], capital.position[1], capital.position[0] + 50, capital.position[1] + 50],
+                outline=capital_color, width=10)
             draw.text((capital.position[0] + 20, capital.position[1] + 20), f"{capital.people_amount}", fill="black",
                       font=font)
 
@@ -109,12 +132,20 @@ class Engine:
         image = Image.new('RGB', (1000, 1000), color='white')
         draw = ImageDraw.Draw(image)
         font = ImageFont.load_default()
+        names_font = ImageFont.truetype("arial.ttf", 30)
+        draw.text((300,50), f"{self.player_name}", fill="black", font=names_font)
+        draw.text((300, 400), f"{self.enemy_name}", fill="black", font=names_font)
         self.draw_player(self.player, draw, font, "blue", "yellow", "cyan")
         self.draw_player(self.enemy, draw, font, "red", "black", "pink")
         self.update()
         if self.winner is not None:
             font = ImageFont.load_default(100)
-            draw.text((150, 250), f"{self.winner}", fill="black", font=font)
+            if self.winner == "player":
+                draw.text((150, 250), f"{self.player_name} won", fill="black", font=font)
+            elif self.winner == "enemy":
+                draw.text((150, 250), f"{self.enemy_name} won", fill="black", font=font)
+            else:
+                draw.text((150, 250), f"draw", fill="black", font=font)
 
         return image
 

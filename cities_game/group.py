@@ -1,4 +1,4 @@
-from city import City
+from cities_game.city import City
 import numpy as np
 
 class Group:

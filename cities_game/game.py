@@ -1,7 +1,7 @@
-from capital_city import Capital
-from city import City
-from group import Group
-from player import Player
+from cities_game.capital_city import Capital
+from cities_game.city import City
+from cities_game.group import Group
+from cities_game.player import Player
 
 class Game:
     def __init__(self, player: Player, enemy: Player) -> None:

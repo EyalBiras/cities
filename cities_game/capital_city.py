@@ -1,4 +1,4 @@
-from city import City
+from cities_game.city import City
 
 class Capital(City):
     def __init__(self, people_amount: int, level: int, position: tuple[int, int]) -> None:
