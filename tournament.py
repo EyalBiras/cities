@@ -10,7 +10,7 @@ from cities_game.city import City
 from cities_game.engine import Engine
 from cities_game.player import Player
 
-BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys"]
+BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
 GROUPS = Path("groups")
 
@@ -52,7 +52,6 @@ def run_game(group1: Path, group2: Path):
         f.write(f"p1, p2 = reset_game()\n")
         f.write(f"e = Engine(p1,{group1.name}.MyBot(),'{group1.name}', p2,{group2.name}.MyBot(), '{group2.name}')\n")
         f.write(f"game = e.play()\n")
-        f.write(f"print('hello')\n")
         f.write(f"images_to_video_from_objects(game, r'games\{group1.name} vs {group2.name}.mp4')")
     subprocess.run([sys.executable, f"{group1.name}-{group2.name}.py"])
 

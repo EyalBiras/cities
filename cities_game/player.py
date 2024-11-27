@@ -46,7 +46,7 @@ class Player:
                         city.level += 1
                 elif action[1] == "send":
                     try:
-                        if city.can_send_groups(action[3]) and isinstance(action[2], City):
+                        if city.can_send_group(action[3]) and isinstance(action[2], City):
                             city.people_amount -= action[3]
                             self.groups.append(Group(action[3], city, action[2], city.position))
                     except Exception:

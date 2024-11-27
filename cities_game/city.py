@@ -43,11 +43,11 @@ class City:
     def get_turns_till_arrival(self, destination: City):
         return np.ceil(self.get_distance_to(destination) / 20)
 
-    def can_send_groups(self, people_amount: int) -> bool:
+    def can_send_group(self, people_amount: int) -> bool:
         return people_amount < self.__people_amount
 
-    def send_group(self, destination: Self, people_amount: int) -> None:
-        if self.can_send_groups(people_amount):
+    def send_group(self, destination: City, people_amount: int) -> None:
+        if self.can_send_group(people_amount):
             self.__action = [self,"send", destination, people_amount]
 
     def get_upgrade_cost(self) -> int:

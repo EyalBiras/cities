@@ -1,4 +1,6 @@
+import concurrent.futures
 import copy
+import multiprocessing
 import threading
 import time
 from asyncio import timeout
@@ -54,10 +56,14 @@ class Engine:
     def do_turn(self) -> None:
         player_game = self.create_game_player()
         try:
-            player_turn = threading.Thread(target=self.player_bot.do_turn, args=[player_game])
-            player_turn.start()
             t_start = time.perf_counter()
-            player_turn.join(timeout=TIME_LIMIT)
+            player_turn = multiprocessing.Process(target=self.player_bot.do_turn, args=[player_game])
+            player_turn.start()
+            player_turn.join(TIME_LIMIT)
+            if player_turn.is_alive():
+                player_turn.terminate()
+                player_turn.join()
+
             t_end = time.perf_counter()
             self.player_time += t_end - t_start
             player_actions = [city.action for city in player_game.player.cities]
@@ -105,8 +111,8 @@ class Engine:
                 self.winner = "draw"
         self.turn += 1
 
-    def draw_player(self,
-                    player: Player,
+    @staticmethod
+    def draw_player(player: Player,
                     draw: ImageDraw,
                     font: ImageFont,
                     city_color,
