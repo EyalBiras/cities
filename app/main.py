@@ -41,5 +41,11 @@ async def get_dashboard_page():
     with open("static/dashboard.html") as f:
         return HTMLResponse(content=f.read())
 
+@app.get("/files.html", response_class=HTMLResponse)
+async def get_dashboard_page():
+    with open("static/files.html") as f:
+        return HTMLResponse(content=f.read())
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=900)

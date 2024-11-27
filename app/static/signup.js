@@ -9,6 +9,7 @@ async function signup() {
     alert('User created successfully! Please log in.');
     document.getElementById('signupUsername').value = '';
     document.getElementById('signupPassword').value = '';
+    window.location.href = "/";
   } catch (err) {
     signupError.textContent = err.message;
   }

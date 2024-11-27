@@ -10,11 +10,13 @@
         <h2>Dashboard</h2>
         <div id="userInfo"></div>
 
+        <!-- Section for displaying available groups -->
         <div id="availableGroupsSection" style="display: none;">
             <h3>Available Groups</h3>
             <div id="availableGroupsList"></div>
         </div>
 
+        <!-- Section for group management -->
         <div id="groupSection">
             <h3>Group Management</h3>
             <div id="createGroupForm">
@@ -24,13 +26,21 @@
             <button onclick="leaveCurrentGroup()">Leave Group</button>
         </div>
 
+        <!-- Section for join requests -->
         <div id="joinRequests" style="display: none;">
             <h3>Join Requests</h3>
             <ul id="requestsList"></ul>
         </div>
 
+        <!-- Navigation to File Management -->
+        <a href="files.html">
+            <button>Go to File Management</button>
+        </a>
+
+        <!-- Logout -->
         <button onclick="logout()">Logout</button>
     </div>
+
     <script src="/static/api.js"></script>
     <script src="/static/dashboard.js"></script>
 </body>

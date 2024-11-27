@@ -160,3 +160,70 @@ async function api_acceptJoinRequest(username) {
 
   return response.json();
 }
+async function getGroupFiles() {
+  const token = getAuthToken();
+  const response = await fetch('/list_all', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to fetch group files');
+  }
+
+  return response.json();
+}
+
+// Function to download a single file
+async function downloadSingleFile(filename) {
+  const token = getAuthToken();
+  const response = await fetch(`/download_file/${filename}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to download file');
+  }
+
+  return response;
+}
+
+// Function to download all files in a group
+async function downloadEntireGroupFiles() {
+  const token = getAuthToken();
+  const response = await fetch('/download_all/', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to download group files');
+  }
+
+  return response;
+}
+
+async function uploadGroupFiles(formData) {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/uploadfile/', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: formData  // Send FormData directly without content type
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to upload files');
+  }
+
+  return response.json();
+}

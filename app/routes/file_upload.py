@@ -61,7 +61,6 @@ async def download_file(
                             detail=f"You need to be in a group inorder to download files")
 
     file_path = Path(current_user.group) / filename
-
     if not file_path.is_file():
         raise HTTPException(status_code=404, detail="File not found.")
 
@@ -107,7 +106,7 @@ async def get_files(
         return []
     files = []
     for file_path in group_directory.rglob("*"):
-        files.append(file_path)
+        files.append(Path(file_path).name)
     return files
 
 def delete_file(file_path: Path):

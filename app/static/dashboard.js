@@ -1,43 +1,40 @@
 // Helper function to fetch user info
 async function fetchUserInfo() {
-  const token = localStorage.getItem('token');
-  const response = await fetch('/users/me/', {
-    headers: {
-      'Authorization': `Bearer ${token}`
+    const token = localStorage.getItem('token');
+    const response = await fetch('/users/me/', {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+    if (!response.ok) {
+        throw new Error('Failed to fetch user info');
     }
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch user info');
-  }
-
-  return response.json();
+    return response.json();
 }
 
 // Function to display available groups
 async function displayAvailableGroups() {
-  try {
-    const groups = await getGroups();
-    const groupsList = document.getElementById('availableGroupsList');
-    groupsList.innerHTML = ''; // Clear previous list
+    try {
+        const groups = await getGroups(); // API to fetch groups
+        const groupsList = document.getElementById('availableGroupsList');
+        groupsList.innerHTML = '';
 
-    // Only show groups if user is not already in a group
-    const user = await fetchUserInfo();
-    if (!user.group) {
-      groups.forEach(group => {
-        const groupItem = document.createElement('div');
-        groupItem.classList.add('group-item');
-        groupItem.innerHTML = `
-          <span>${group.name}</span>
-          <button onclick="requestToJoinGroup('${group.name}')">Join Group</button>
-        `;
-        groupsList.appendChild(groupItem);
-      });
-      document.getElementById('availableGroupsSection').style.display = 'block';
+        const user = await fetchUserInfo();
+        if (!user.group) {
+            groups.forEach((group) => {
+                const groupItem = document.createElement('div');
+                groupItem.classList.add('group-item');
+                groupItem.innerHTML = `
+                    <span>${group.name}</span>
+                    <button onclick="requestToJoinGroup('${group.name}')">Join</button>
+                `;
+                groupsList.appendChild(groupItem);
+            });
+            document.getElementById('availableGroupsSection').style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error fetching groups:', error);
     }
-  } catch (error) {
-    console.error('Error fetching groups:', error);
-  }
 }
 
 // Function to update dashboard with user and group information
@@ -49,7 +46,6 @@ async function updateDashboard() {
       <p>Group: ${user.group || 'No Group'}</p>
     `;
 
-    // Show/hide group-related sections
     const groupSection = document.getElementById('groupSection');
     const joinRequestsSection = document.getElementById('joinRequests');
 
@@ -127,17 +123,16 @@ async function acceptJoinRequest(username) {
   }
 }
 
-// Function to handle logout
+// Function to logout
 function logout() {
-  localStorage.removeItem('token');
-  window.location.reload();
-  window.location.href = "/";
+    localStorage.removeItem('token');
+    window.location.href = "/";
 }
 
-// Initial setup: Check if user is logged in and update dashboard
+// Initialize dashboard on load
 window.onload = () => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    updateDashboard();
-  }
+    const token = localStorage.getItem('token');
+    if (token) {
+        updateDashboard();
+    }
 };
