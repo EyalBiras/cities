@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import json
 from cities_game.capital_city import Capital
 from cities_game.city import City
 from cities_game.player import Player
@@ -55,3 +55,6 @@ def images_to_video_from_objects(image_objects, output_video_path, fps=1, size=N
     out.release()
     cv2.destroyAllWindows()
     print(f"Video saved to: {output_video_path}")
+
+def get_results():
+    pass

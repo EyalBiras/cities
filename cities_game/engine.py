@@ -147,16 +147,18 @@ class Engine:
         if self.winner is not None:
             font = ImageFont.load_default(100)
             if self.winner == "player":
+                self.winner = self.player_name
                 draw.text((150, 250), f"{self.player_name} won", fill="black", font=font)
             elif self.winner == "enemy":
+                self.winner = self.enemy_name
                 draw.text((150, 250), f"{self.enemy_name} won", fill="black", font=font)
             else:
                 draw.text((150, 250), f"draw", fill="black", font=font)
 
         return image
 
-    def play(self) -> list[Image]:
+    def play(self) -> tuple[list[Image], str]:
         images = []
         while self.winner is None:
             images.append(self.draw())
-        return images
+        return images, self.winner

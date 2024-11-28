@@ -5,13 +5,23 @@ from app.routes.auth import get_current_active_user
 from app.db import users_db, groups_db, get_user, get_group_by_name
 from fastapi import Form
 
-router = APIRouter()
+def verify_group_name(group_name: str) -> bool:
+    if group_name[0].isdigit():
+        return False
+    for letter in group_name:
+        if not(letter.isdigit() or letter.isalpha()):
+            return False
+    return True
 
+router = APIRouter()
 @router.post("/create_group")
 async def create_group(
         current_user: Annotated[User, Depends(get_current_active_user)],
         group_name: str = Form(...)
 ):
+    if not verify_group_name(group_name):
+        raise HTTPException(status_code=400,
+                            detail=f"Not English group names is not allowed")
     if current_user.group is not None:
         raise HTTPException(status_code=400,
                             detail=f"You are already in a group {current_user.group}, leave the group inorder to create a new one")
@@ -52,6 +62,7 @@ async def send_join_request(
         current_user: Annotated[User, Depends(get_current_active_user)],
         group_name: str = Form(...)
 ):
+
     if group_name not in [group.name for group in groups_db]:
         raise HTTPException(status_code=400, detail=f"Group {group_name} doesnt exist")
     if current_user.group == group_name:
@@ -83,6 +94,8 @@ async def accept_join_request(
         current_user: Annotated[User, Depends(get_current_active_user)],
         user: str = Form(...)
 ):
+    if user not in users_db.keys():
+        raise HTTPException(status_code=400, detail=f"Accepted user doesnt exist!")
     if current_user.group is None:
         raise HTTPException(status_code=400, detail=f"You are not in a group")
     user_group = get_group_by_name(current_user.group)
