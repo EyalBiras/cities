@@ -1,19 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Annotated
-from app.models import User, UserInDB, Group
-from app.routes.auth import get_current_active_user
-from app.db import users_db, groups_db, get_user, get_group_by_name
+
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Form
+
+from app.db import users_db, groups_db, get_user, get_group_by_name, save_groups_db, save_users_db
+from app.models import User, Group
+from app.routes.auth import get_current_active_user
+
 
 def verify_group_name(group_name: str) -> bool:
     if group_name[0].isdigit():
         return False
     for letter in group_name:
-        if not(letter.isdigit() or letter.isalpha()):
+        if not (letter.isdigit() or letter.isalpha()):
             return False
     return True
 
+
 router = APIRouter()
+
+
 @router.post("/create_group")
 async def create_group(
         current_user: Annotated[User, Depends(get_current_active_user)],
@@ -29,8 +35,10 @@ async def create_group(
         raise HTTPException(status_code=400,
                             detail=f"A group with name {group_name} already exists please choose a different name")
     get_user(current_user.username)["group"] = group_name
-    groups_db.append(Group(name=group_name, members=[current_user.username], owner=current_user.username, join_requests=[]))
-
+    groups_db.append(
+        Group(name=group_name, members=[current_user.username], owner=current_user.username, join_requests=[]))
+    save_groups_db()
+    save_users_db()
 
 
 @router.post("/leave_group")
@@ -49,6 +57,8 @@ async def leave_group(
                 group.owner = group.members[0]
             break
     get_user(current_user.username)["group"] = None
+    save_groups_db()
+    save_users_db()
     return {"message": "Left group successfully"}
 
 
@@ -62,7 +72,6 @@ async def send_join_request(
         current_user: Annotated[User, Depends(get_current_active_user)],
         group_name: str = Form(...)
 ):
-
     if group_name not in [group.name for group in groups_db]:
         raise HTTPException(status_code=400, detail=f"Group {group_name} doesnt exist")
     if current_user.group == group_name:
@@ -76,6 +85,7 @@ async def send_join_request(
                 raise HTTPException(status_code=400,
                                     detail=f"You've are already sent a join request to group {group_name}")
             group.join_requests.append(current_user.username)
+    save_groups_db()
     return {"message": "Sent a join request successfully"}
 
 
@@ -88,6 +98,7 @@ async def get_join_requests(
     for group in groups_db:
         if group.name == current_user.group:
             return group.join_requests
+
 
 @router.post("/accept_join_request")
 async def accept_join_request(
@@ -109,5 +120,6 @@ async def accept_join_request(
     for group in groups_db:
         if user in group.join_requests:
             group.join_requests.remove(user)
-
+    save_groups_db()
+    save_users_db()
     return {"message": f"Added {user} successfully"}

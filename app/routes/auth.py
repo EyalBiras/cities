@@ -1,16 +1,14 @@
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from datetime import datetime, timedelta, timezone
-
-from jwt import InvalidTokenError
-
-from app.db import users_db, groups_db, get_group_by_name, set_user
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
-from ..models import User, UserInDB, Group, Token, TokenData, UserCreate
 import jwt
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jwt import InvalidTokenError
 from passlib.context import CryptContext
+
+from app.db import users_db, set_user, save_users_db
+from ..models import User, UserInDB, Token, TokenData, UserCreate
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -53,6 +51,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -72,6 +71,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         raise credentials_exception
     return user
 
+
 async def get_current_active_user(
         current_user: Annotated[User, Depends(get_current_user)],
 ):
@@ -79,7 +79,9 @@ async def get_current_active_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+
 router = APIRouter()
+
 
 @router.post("/signup")
 async def signup(user: UserCreate):
@@ -90,7 +92,9 @@ async def signup(user: UserCreate):
         )
     set_user(user.username, get_password_hash(user.password))
     print(get_password_hash(user.password))
+    save_users_db()
     return {"massage": "User created successfully"}
+
 
 @router.post("/token")
 async def login_for_access_token(
