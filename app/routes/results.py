@@ -19,7 +19,9 @@ async def get_tournament_results(
 ):
     with open(RESULTS_FILE) as f:
         results = json.load(f)
-    return results
+    sorted_results = sorted(results.items(), key=lambda x: x[1]["total score"], reverse=True)
+    print(sorted_results)
+    return dict(sorted_results)
 
 @router.get("/get_group_games/{group_name}")
 async def get_group_games(group_name: str):
