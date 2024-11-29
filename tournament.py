@@ -5,9 +5,9 @@ import json
 
 BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
-GROUPS = Path("groups")
+GROUPS = Path("../groups")
 
-RESULTS_FILE = Path("results.json")
+RESULTS_FILE = Path("../results.json")
 
 def reset_results(groups: list[str]) -> None:
     with open(RESULTS_FILE, "w") as f:
@@ -41,7 +41,7 @@ def validate_group(group: Path) -> bool:
 
 
 def run_game(group1: Path, group2: Path):
-    game_path = Path(f"{group1.name}-{group2.name}.py")
+    game_path = Path(f"../{group1.name}-{group2.name}.py")
     with open(game_path, "w") as f:
         f.write("from cities_game.engine import Engine\n")
         f.write("from utils import reset_game\n")
@@ -51,7 +51,7 @@ def run_game(group1: Path, group2: Path):
         f.write(f"from pathlib import Path\n")
         f.write(f"import json\n")
         f.write(f"\n")
-        f.write(f"RESULTS_FILE = Path('results.json')\n")
+        f.write(f"RESULTS_FILE = Path('../results.json')\n")
         f.write(f"\n")
         f.write(f"if __name__ == '__main__':\n")
         f.write(f"\tp1, p2 = reset_game()\n")
@@ -76,7 +76,7 @@ def run_game(group1: Path, group2: Path):
         f.write(f"\tgame_file = 'games\{group1.name} vs {group2.name}-winner-' + winner + '.mp4'\n")
         f.write(f"\timages_to_video_from_objects(game, game_file)")
     subprocess.run([sys.executable, game_path])
-    game_path.unlink()
+    # game_path.unlink()
 
 
 def run_tournament():
@@ -95,3 +95,4 @@ def run_tournament():
 
     print(list(GROUPS.glob("*")))
 
+run_tournament()

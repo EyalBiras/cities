@@ -12,6 +12,11 @@ from PIL import Image, ImageDraw, ImageFont
 from cities_game.bot import Bot
 
 TIME_LIMIT = 2
+class CityNotFoundERROR(Exception):
+    pass
+
+
+
 
 class Engine:
     def __init__(self,
@@ -47,6 +52,7 @@ class Engine:
         cities = self.enemy.cities + [self.enemy.capital_city]
         if city in cities:
             return cities[cities.index(city)]
+        raise CityNotFoundERROR()
 
     def convert_action(self, action):
         action[0] = self.convert_city(action[0])
@@ -58,13 +64,7 @@ class Engine:
         player_game = self.create_game_player()
         try:
             t_start = time.perf_counter()
-            player_turn = multiprocessing.Process(target=self.player_bot.do_turn, args=[player_game])
-            player_turn.start()
-            player_turn.join(TIME_LIMIT)
-            if player_turn.is_alive():
-                player_turn.terminate()
-                player_turn.join()
-
+            self.player_bot.do_turn(player_game)
             t_end = time.perf_counter()
             self.player_time += t_end - t_start
             player_actions = [city.action for city in player_game.player.cities]
@@ -77,13 +77,7 @@ class Engine:
         enemy_game = self.create_game_enemy()
         try:
             t_start = time.perf_counter()
-            enemy_turn = multiprocessing.Process(target=self.player_bot.do_turn, args=[player_game])
-            enemy_turn.start()
-            enemy_turn.join(TIME_LIMIT)
-            if enemy_turn.is_alive():
-                enemy_turn.terminate()
-                enemy_turn.join()
-
+            self.enemy_bot.do_turn(enemy_game)
             t_end = time.perf_counter()
             self.enemy_time += t_end - t_start
 
@@ -107,7 +101,7 @@ class Engine:
         self.player.update_conquered_cities()
         self.enemy.update_conquered_cities()
 
-        if self.player.capital_city is None or self.player_time > TIME_LIMIT:
+        if self.player.capital_city is None:
             self.winner = "enemy"
             if self.enemy.capital_city is None:
                 self.winner = "draw"
