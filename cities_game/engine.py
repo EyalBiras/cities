@@ -30,6 +30,7 @@ class Engine:
         self.enemy_bot = enemy_bot
         self.enemy_name = enemy_name
         self.enemy_actions = []
+        self.enemy_time = 0
         self.winner = None
         self.turn = 1
 
@@ -75,7 +76,17 @@ class Engine:
 
         enemy_game = self.create_game_enemy()
         try:
-            self.enemy_bot.do_turn(enemy_game)
+            t_start = time.perf_counter()
+            enemy_turn = multiprocessing.Process(target=self.player_bot.do_turn, args=[player_game])
+            enemy_turn.start()
+            enemy_turn.join(TIME_LIMIT)
+            if enemy_turn.is_alive():
+                enemy_turn.terminate()
+                enemy_turn.join()
+
+            t_end = time.perf_counter()
+            self.enemy_time += t_end - t_start
+
             enemy_actions = [city.action for city in enemy_game.player.cities]
             enemy_actions.append(enemy_game.player.capital_city.action)
             self.enemy_actions = [self.convert_action(action) for action in enemy_actions if action is not None]
