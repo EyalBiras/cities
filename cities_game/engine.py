@@ -1,21 +1,17 @@
-import concurrent.futures
 import copy
-import multiprocessing
-import threading
 import time
-from asyncio import timeout
 
+from PIL import Image, ImageDraw, ImageFont
+
+from cities_game.bot import Bot
 from cities_game.city import City
 from cities_game.game import Game
 from cities_game.player import Player
-from PIL import Image, ImageDraw, ImageFont
-from cities_game.bot import Bot
-
 TIME_LIMIT = 2
+
+
 class CityNotFoundERROR(Exception):
     pass
-
-
 
 
 class Engine:
@@ -80,14 +76,12 @@ class Engine:
             self.enemy_bot.do_turn(enemy_game)
             t_end = time.perf_counter()
             self.enemy_time += t_end - t_start
-
             enemy_actions = [city.action for city in enemy_game.player.cities]
             enemy_actions.append(enemy_game.player.capital_city.action)
             self.enemy_actions = [self.convert_action(action) for action in enemy_actions if action is not None]
         except Exception as e:
             self.winner = "player"
             return
-
 
     def update(self) -> None:
         self.do_turn()
@@ -101,11 +95,11 @@ class Engine:
         self.player.update_conquered_cities()
         self.enemy.update_conquered_cities()
 
-        if self.player.capital_city is None:
+        if self.player.capital_city is None or self.player_time > TIME_LIMIT:
             self.winner = "enemy"
-            if self.enemy.capital_city is None:
+            if self.enemy.capital_city is None or self.enemy_time > TIME_LIMIT:
                 self.winner = "draw"
-        elif self.enemy.capital_city is None:
+        elif self.enemy.capital_city is None or self.enemy_time > TIME_LIMIT:
             self.winner = "player"
         if self.turn == 300 and self.winner is None:
             if len(self.player.cities) > len(self.enemy.cities):
@@ -144,7 +138,7 @@ class Engine:
         draw = ImageDraw.Draw(image)
         font = ImageFont.load_default()
         names_font = ImageFont.truetype("arial.ttf", 30)
-        draw.text((300,50), f"{self.player_name}", fill="black", font=names_font)
+        draw.text((300, 50), f"{self.player_name}", fill="black", font=names_font)
         draw.text((300, 400), f"{self.enemy_name}", fill="black", font=names_font)
         self.draw_player(self.player, draw, font, "blue", "yellow", "cyan")
         self.draw_player(self.enemy, draw, font, "red", "black", "pink")
