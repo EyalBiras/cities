@@ -2,17 +2,20 @@ import subprocess
 import sys
 from pathlib import Path
 import json
+import shutil
 
 BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
 GROUPS = Path("../groups")
-
+TOURNAMENT_CODE_DIR = "tournament_code"
 RESULTS_FILE = Path("../results.json")
+
 
 def reset_results(groups: list[str]) -> None:
     with open(RESULTS_FILE, "w") as f:
-        results = {group: {"total score": 0,"wins": 0, "losses": 0, "draws": 0} for group in groups}
+        results = {group: {"total score": 0, "wins": 0, "losses": 0, "draws": 0} for group in groups}
         json.dump(results, f, indent=2)
+
 
 def validate_file(file: Path) -> bool:
     if file.name == "main.py":
@@ -46,8 +49,8 @@ def run_game(group1: Path, group2: Path):
         f.write("from cities_game.engine import Engine\n")
         f.write("from utils import reset_game\n")
         f.write("from utils import images_to_video_from_objects\n")
-        f.write(f"import groups.{group1.name}.main as {group1.name}\n")
-        f.write(f"import groups.{group2.name}.main as {group2.name}\n")
+        f.write(f"import groups.{group1.name}.{TOURNAMENT_CODE_DIR}.main as {group1.name}\n")
+        f.write(f"import groups.{group2.name}.{TOURNAMENT_CODE_DIR}.main as {group2.name}\n")
         f.write(f"from pathlib import Path\n")
         f.write(f"import json\n")
         f.write(f"\n")
@@ -73,14 +76,20 @@ def run_game(group1: Path, group2: Path):
         f.write(f"\twith open(RESULTS_FILE, 'w') as f:\n")
         f.write(f"\t\tjson.dump(results, f, indent=2)\n")
         f.write(f"\n")
-        f.write(f"\tgame_file = 'games\{group1.name} vs {group2.name}-winner-' + winner + '.mp4'\n")
+        f.write(f"\tgame_file = 'games\\{group1.name} vs {group2.name}-winner-' + winner + '.mp4'\n")
         f.write(f"\timages_to_video_from_objects(game, game_file)")
     subprocess.run([sys.executable, game_path])
     # game_path.unlink()
 
 
+def move_development_to_tournament(group: str) -> None:
+    shutil.copytree(Path(fr"..\groups\{group}\development_code"), fr"..\groups\{group}\{TOURNAMENT_CODE_DIR}", dirs_exist_ok=True)
+
+
 def run_tournament():
     groups = [Path(file).name for file in GROUPS.glob("*")]
+    for group in groups:
+        move_development_to_tournament(group)
     reset_results(groups)
     for i, group in enumerate(groups):
         for group2 in groups[i + 1:]:
@@ -94,5 +103,3 @@ def run_tournament():
         json.dump(results, f, indent=2)
 
     print(list(GROUPS.glob("*")))
-
-run_tournament()

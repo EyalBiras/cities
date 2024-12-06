@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from cities_game.game import Game
-from timeout import timeout
+from cities_game.timeout import timeout
 TIME_LIMIT = 2
 
 class Bot(ABC):

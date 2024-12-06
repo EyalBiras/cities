@@ -2,13 +2,13 @@
   "group2": {
     "total score": 0,
     "wins": 0,
-    "losses": 14,
-    "draws": 6
+    "losses": 1,
+    "draws": 0
   },
   "Morbius": {
     "total score": 1.0,
-    "wins": 14,
+    "wins": 1,
     "losses": 0,
-    "draws": 6
+    "draws": 0
   }
 }
