@@ -2,10 +2,17 @@
   {
     "name": "Morbius",
     "members": [
-      "Eyal",
-      "a"
+      "Eyal"
     ],
     "owner": "Eyal",
+    "join_requests": []
+  },
+  {
+    "name": "group2",
+    "members": [
+      "a"
+    ],
+    "owner": "a",
     "join_requests": []
   }
 ]

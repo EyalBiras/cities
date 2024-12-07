@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 from app.models import Group
-
+BASE_PATH = Path("../groups")
 GROUPS_DB_SAVE_FILE = Path("../dbs/groups_db.json")
 USERS_DB_SAVE_FILE = Path("../dbs/users_db.json")
 
@@ -50,3 +50,5 @@ def save_groups_db() -> None:
     with open(GROUPS_DB_SAVE_FILE, 'w') as f:
         json.dump(groups, f, indent=2)
 
+def get_group_directory(group: str) -> Path:
+    return BASE_PATH / Path(group)

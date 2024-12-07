@@ -1,23 +1,29 @@
+from pathlib import Path
+
 import cv2
 import numpy as np
-import json
+from PIL import Image
+
 from cities_game.capital_city import Capital
 from cities_game.city import City
 from cities_game.player import Player
 
 
 def reset_game():
-    p1_cities = [City(5,1, np.array((100,100))), City(5,1, np.array((200,100))), City(5,1, np.array((300,100)))]
-    p2_cities = [City(5,1, np.array((100,300))), City(5,1, np.array((200,300))), City(5,1, np.array((300,300)))]
-    p1_capital = Capital(5,1,np.array((0,100)))
-    p2_capital = Capital(5,1,np.array((0,300)))
+    p1_cities = [City(5, 1, np.array((100, 100))), City(5, 1, np.array((200, 100))), City(5, 1, np.array((300, 100)))]
+    p2_cities = [City(5, 1, np.array((100, 300))), City(5, 1, np.array((200, 300))), City(5, 1, np.array((300, 300)))]
+    p1_capital = Capital(5, 1, np.array((0, 100)))
+    p2_capital = Capital(5, 1, np.array((0, 300)))
     p1_groups = []
     p2_groups = []
     p1 = Player(p1_cities, p1_capital, p1_groups)
     p2 = Player(p2_cities, p2_capital, p2_groups)
     return p1, p2
 
-def images_to_video_from_objects(image_objects, output_video_path, fps=1, size=None):
+
+def images_to_video(image_objects: list[Image], output_video_path, fps=1, size=None):
+    output_video_path = Path(output_video_path)
+    output_video_path.parent.mkdir(parents=True, exist_ok=True)
     if not image_objects:
         raise ValueError("The list of image objects is empty.")
 
@@ -48,13 +54,12 @@ def images_to_video_from_objects(image_objects, output_video_path, fps=1, size=N
             print("Warning: Could not read an image. Skipping.")
             continue
 
-        img_resized = cv2.resize(img, size)
-
-        out.write(img_resized)
+        out.write(img)
 
     out.release()
     cv2.destroyAllWindows()
     print(f"Video saved to: {output_video_path}")
+
 
 def get_results():
     pass
