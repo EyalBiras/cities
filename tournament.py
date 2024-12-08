@@ -1,10 +1,10 @@
 import json
+import re
 import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
-import re
 
 BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval", "TimeoutError"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
@@ -12,6 +12,12 @@ GROUPS = Path("../groups")
 TOURNAMENT_CODE_DIR = "tournament_code"
 RESULTS_FILE = Path("../results.json")
 EXCEPT_EXCEPTION_PATTERN = r"^\s*except\s+Exception\s*(?:as\s+\w+)?\s*:\s*$"
+
+
+def is_python(file: Path) -> bool:
+    if not file.is_file():
+        return False
+    return file.name.endswith(".py")
 
 
 def reset_results(groups: list[str]) -> None:
@@ -42,18 +48,21 @@ def validate_file(file: Path) -> bool:
 
 
 def validate_group(group: Path) -> bool:
-    print(list(group.rglob("*")))
-    print(Path(list(group.rglob("*"))[0]).name)
-    files = [Path(file).name for file in group.rglob("*")]
-    if "main.py" not in files:
-        return False
+    files = [Path(file) for file in group.rglob("*") if is_python(file)]
+    print(files)
+    found_main = False
     for file in files:
-        if not validate_file(group / files[0]):
+        if file.name == "main.py":
+            found_main = True
+        if not validate_file(files[0]):
             return False
-    return True
+    return found_main
 
 
 def battle(group: Path, enemy: Path, games_directory: str = "games") -> None:
+    if not validate_group(group / "development_code") or not validate_group(enemy / TOURNAMENT_CODE_DIR):
+        return
+
     game_path = Path(f"../{group.name}-{enemy.name}.py")
     with open(game_path, "w") as f:
         f.write("from cities_game.engine import Engine\n")
@@ -66,7 +75,8 @@ def battle(group: Path, enemy: Path, games_directory: str = "games") -> None:
         f.write(f"\n")
         f.write(f"if __name__ == '__main__':\n")
         f.write(f"\tp1, p2, neutral_player = reset_game()\n")
-        f.write(f"\te = Engine(p1,{group.name}.MyBot(),'{group.name}', p2,{enemy.name}.MyBot(), '{enemy.name}', neutral_player)\n")
+        f.write(
+            f"\te = Engine(p1,{group.name}.MyBot(),'{group.name}', p2,{enemy.name}.MyBot(), '{enemy.name}', neutral_player)\n")
         f.write(f"\tgame, winner = e.play()\n")
         f.write(f"\n")
         f.write(f"\tgame_file = r'{games_directory}\\{group.name} vs {enemy.name}-winner-' + winner + '.mp4'\n")
@@ -89,7 +99,8 @@ def run_game(group1: Path, group2: Path, games_directory: str = "../games", code
         f.write(f"\n")
         f.write(f"if __name__ == '__main__':\n")
         f.write(f"\tp1, p2, neutral_player = reset_game()\n")
-        f.write(f"\te = Engine(p1,{group1.name}.MyBot(),'{group1.name}', p2,{group2.name}.MyBot(), '{group2.name}', neutral_player)\n")
+        f.write(
+            f"\te = Engine(p1,{group1.name}.MyBot(),'{group1.name}', p2,{group2.name}.MyBot(), '{group2.name}', neutral_player)\n")
         f.write(f"\tgame, winner = e.play()\n")
         f.write(f"\twith open(RESULTS_FILE) as f:\n")
         f.write(f"\t\tresults = json.load(f)\n")
@@ -120,7 +131,7 @@ def move_development_to_tournament(group: str) -> None:
 
 def run_tournament():
     t1 = time.perf_counter()
-    groups = [Path(file).name for file in GROUPS.glob("*")]
+    groups = [Path(file).name for file in GROUPS.glob("*") if validate_group(Path(file / "development_code"))]
     for group in groups:
         move_development_to_tournament(group)
     reset_results(groups)
