@@ -4,12 +4,14 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+import re
 
-BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval"]
+BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval", "TimeoutError"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
 GROUPS = Path("../groups")
 TOURNAMENT_CODE_DIR = "tournament_code"
 RESULTS_FILE = Path("../results.json")
+EXCEPT_EXCEPTION_PATTERN = r"^\s*except\s+Exception\s*(?:as\s+\w+)?\s*:\s*$"
 
 
 def reset_results(groups: list[str]) -> None:
@@ -30,6 +32,11 @@ def validate_file(file: Path) -> bool:
         contents = f.read()
         for word in BANNED_WORDS:
             if word in contents:
+                return False
+
+        lines = contents.splitlines()
+        for line in lines:
+            if re.match(EXCEPT_EXCEPTION_PATTERN, line):
                 return False
     return True
 
