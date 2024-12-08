@@ -45,6 +45,8 @@ def validate_group(group: Path) -> bool:
     print(list(group.rglob("*")))
     print(Path(list(group.rglob("*"))[0]).name)
     files = [Path(file).name for file in group.rglob("*")]
+    if "main.py" not in files:
+        return False
     for file in files:
         if not validate_file(group / files[0]):
             return False
