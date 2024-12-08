@@ -2,7 +2,7 @@ import copy
 import time
 
 from PIL import Image, ImageDraw, ImageFont
-
+from cities_game.timeout import timeout
 from cities_game.bot import Bot
 from cities_game.city import City
 from cities_game.game import Game
@@ -65,8 +65,9 @@ class Engine:
     def do_turn(self) -> None:
         player_game = self.create_game_player()
         try:
-            t_start = time.perf_counter()
-            self.player_bot.do_turn(player_game)
+            with timeout(TIME_LIMIT):
+                t_start = time.perf_counter()
+                self.player_bot.do_turn(player_game)
             t_end = time.perf_counter()
             self.player_time += t_end - t_start
             player_actions = [city.action for city in player_game.player.cities]
@@ -78,8 +79,9 @@ class Engine:
 
         enemy_game = self.create_game_enemy()
         try:
-            t_start = time.perf_counter()
-            self.enemy_bot.do_turn(enemy_game)
+            with timeout(TIME_LIMIT):
+                t_start = time.perf_counter()
+                self.enemy_bot.do_turn(enemy_game)
             t_end = time.perf_counter()
             self.enemy_time += t_end - t_start
             enemy_actions = [city.action for city in enemy_game.player.cities]
