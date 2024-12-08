@@ -24,6 +24,11 @@ def is_hidden_file(file: Path) -> bool:
     if file.name[-1] == "_":
         return True
 
+def is_python(file: Path) -> bool:
+    if not file.is_file():
+        return False
+    return file.name.endswith(".py")
+
 def get_group_directory(group: str) -> Path:
     return BASE_PATH / Path(group)
 
@@ -50,9 +55,9 @@ async def create_upload_file(
         if total_size > MAX_SIZE:
             raise HTTPException(status_code=400,
                                 detail=f"Total size of files exceeds maximum size of {MAX_SIZE_STR}")
-        if is_hidden_file(Path(file.filename)):
+        if not is_python(Path(file.filename)):
             raise HTTPException(status_code=400,
-                                detail=f"File shouldn't end with pyc or _")
+                                detail=f"File should end with .py")
 
     for file in files:
         file_path = get_group_directory(current_user.group) / DEVELOPMENT_CODE_DIR / file.filename
@@ -124,9 +129,8 @@ async def get_files(
         return []
     files = []
     for file_path in group_directory.rglob("*"):
-        if is_hidden_file(file_path):
-            continue
-        files.append(Path(file_path).name)
+        if is_python(file_path):
+            files.append(Path(file_path).name)
     return files
 
 
