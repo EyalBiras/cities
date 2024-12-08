@@ -10,15 +10,15 @@ from cities_game.player import Player
 
 
 def reset_game():
-    p1_cities = [City(5, 1, np.array((100, 100))), City(5, 1, np.array((200, 100))), City(5, 1, np.array((300, 100)))]
-    p2_cities = [City(5, 1, np.array((100, 300))), City(5, 1, np.array((200, 300))), City(5, 1, np.array((300, 300)))]
     p1_capital = Capital(5, 1, np.array((0, 100)))
     p2_capital = Capital(5, 1, np.array((0, 300)))
     p1_groups = []
     p2_groups = []
-    p1 = Player(p1_cities, p1_capital, p1_groups)
-    p2 = Player(p2_cities, p2_capital, p2_groups)
-    return p1, p2
+    neutral_cities = [City(5, 0, np.array((100, 100))), City(5, 0, np.array((200, 100))), City(5, 0, np.array((300, 100))), City(5, 0, np.array((100, 300))), City(5, 0, np.array((200, 300))), City(5, 0, np.array((300, 300)))]
+    p1 = Player([], p1_capital, p1_groups)
+    p2 = Player([], p2_capital, p2_groups)
+    neutral_player = Player(neutral_cities, None, [])
+    return p1, p2, neutral_player
 
 
 def images_to_video(image_objects: list[Image], output_video_path, fps=1, size=None):

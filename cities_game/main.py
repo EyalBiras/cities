@@ -7,6 +7,8 @@ from cities_game.engine import Engine
 from cities_game.game import Game
 from player import Player
 from cities_game.bot import Bot
+from utils import reset_game
+
 
 def images_to_video_from_objects(image_objects, output_video_path, fps=1, size=None):
     if not image_objects:
@@ -48,10 +50,7 @@ def images_to_video_from_objects(image_objects, output_video_path, fps=1, size=N
     print(f"Video saved to: {output_video_path}")
 
 t1 = perf_counter()
-p1_cities = [City(5,1, np.array((100,100))), City(5,1, np.array((200,100))), City(5,1, np.array((300,100)))]
-p2_cities = [City(5,1, np.array((100,300))), City(5,1, np.array((200,300))), City(5,1, np.array((300,300)))]
-p1_capital = Capital(5,1,np.array((0,100)))
-p2_capital = Capital(5,1,np.array((0,300)))
+p1, p2, neutral = reset_game()
 p1_groups = []
 p2_groups = []
 class M(Bot):
@@ -59,7 +58,7 @@ class M(Bot):
         if game.get_my_city_capital().people_amount > 10:
             cities = game.get_my_cities() + [game.get_my_city_capital()]
             for city in cities:
-                city.send_group(game.get_enemy_city_capital(), game.get_my_city_capital().people_amount - 5)
+                city.send_group(game.get_neutral_cities()[0], game.get_my_city_capital().people_amount - 5)
 
 class G(Bot):
     def do_turn(self, game: Game) -> None:
@@ -69,11 +68,10 @@ class G(Bot):
                 city.send_group(game.get_enemy_city_capital(), game.get_my_city_capital().people_amount - 1)
 
 
-p1 = Player(p1_cities, p1_capital, p1_groups)
-p2 = Player(p2_cities, p2_capital, p2_groups)
+
 m = M()
 g = G()
-e = Engine(p1,m, p2,m)
+e = Engine(p1,m,"1", p2,m, "2", neutral)
 i, _ = e.play()
 images_to_video_from_objects(i, "../a.mp4")
 print(perf_counter() - t1)

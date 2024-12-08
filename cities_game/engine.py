@@ -7,6 +7,7 @@ from cities_game.bot import Bot
 from cities_game.city import City
 from cities_game.game import Game
 from cities_game.player import Player
+
 TIME_LIMIT = 2
 
 
@@ -21,7 +22,8 @@ class Engine:
                  player_name: str,
                  enemy: Player,
                  enemy_bot: Bot,
-                 enemy_name: str) -> None:
+                 enemy_name: str,
+                 neutral: Player) -> None:
         self.player = player
         self.player_bot = player_bot
         self.player_name = player_name
@@ -32,20 +34,24 @@ class Engine:
         self.enemy_name = enemy_name
         self.enemy_actions = []
         self.enemy_time = 0
+        self.neutral = neutral
         self.winner = None
         self.turn = 1
 
     def create_game_player(self) -> Game:
-        return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy))
+        return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy), copy.deepcopy(self.neutral))
 
     def create_game_enemy(self) -> Game:
-        return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player))
+        return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player), copy.deepcopy(self.neutral))
 
     def convert_city(self, city: City):
         cities = self.player.cities + [self.player.capital_city]
         if city in cities:
             return cities[cities.index(city)]
         cities = self.enemy.cities + [self.enemy.capital_city]
+        if city in cities:
+            return cities[cities.index(city)]
+        cities = self.neutral.cities
         if city in cities:
             return cities[cities.index(city)]
         raise CityNotFoundERROR()
@@ -90,8 +96,10 @@ class Engine:
         self.enemy.update_groups()
         self.player.update_cities(self.player_actions)
         self.enemy.update_cities(self.enemy_actions)
+        self.neutral.update_cities([])
         self.player.update_lost_cities()
         self.enemy.update_lost_cities()
+        self.neutral.update_lost_cities()
         self.player.update_conquered_cities()
         self.enemy.update_conquered_cities()
 
@@ -142,6 +150,7 @@ class Engine:
         draw.text((300, 400), f"{self.enemy_name}", fill="black", font=names_font)
         self.draw_player(self.player, draw, font, "blue", "yellow", "cyan")
         self.draw_player(self.enemy, draw, font, "red", "black", "pink")
+        self.draw_player(self.neutral, draw, font, "gray", "gray", "gray")
         self.update()
         if self.winner is not None:
             font = ImageFont.load_default(100)
@@ -156,7 +165,7 @@ class Engine:
 
         return image
 
-    def play(self) -> tuple[list[Image], str]:
+    def play(self) -> tuple[list[Image], str | None]:
         images = []
         while self.winner is None:
             images.append(self.draw())

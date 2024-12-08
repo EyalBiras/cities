@@ -3,7 +3,7 @@ from cities_game.capital_city import Capital
 from cities_game.group import Group
 
 class Player:
-    def __init__(self, cities: list[City], capital_city: Capital, groups: list[Group]) -> None:
+    def __init__(self, cities: list[City], capital_city: Capital | None, groups: list[Group]) -> None:
         self.cities = cities
         self.capital_city = capital_city
         self.groups = groups
@@ -55,10 +55,11 @@ class Player:
             except ValueError:
                 pass
 
-        if self.capital_city.people_amount < 0:
-            self.capital_city = None
-        else:
-            self.capital_city.update()
+        if self.capital_city is not None:
+            if self.capital_city.people_amount < 0:
+                self.capital_city = None
+            else:
+                self.capital_city.update()
 
     def update_lost_cities(self) -> None:
         for city in self.lost_cities:

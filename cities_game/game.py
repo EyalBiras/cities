@@ -3,10 +3,12 @@ from cities_game.city import City
 from cities_game.group import Group
 from cities_game.player import Player
 
+
 class Game:
-    def __init__(self, player: Player, enemy: Player) -> None:
+    def __init__(self, player: Player, enemy: Player, neutral: Player) -> None:
         self.player = player
         self.enemy = enemy
+        self.neutral = neutral
 
     def get_enemy_cities(self) -> list[City]:
         return self.enemy.cities
@@ -27,4 +29,4 @@ class Game:
         return self.player.groups
 
     def get_neutral_cities(self) -> list[City]:
-        pass
+        return self.neutral.cities

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Self
-
 import numpy as np
 
 
@@ -11,7 +9,6 @@ class City:
         self.__level = level
         self.__action = None
         self.__position = position
-
 
     @property
     def level(self):
@@ -48,7 +45,7 @@ class City:
 
     def send_group(self, destination: City, people_amount: int) -> None:
         if self.can_send_group(people_amount):
-            self.__action = [self,"send", destination, people_amount]
+            self.__action = [self, "send", destination, people_amount]
 
     def get_upgrade_cost(self) -> int:
         return 20
