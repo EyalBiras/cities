@@ -1,3 +1,5 @@
+import os
+import sys
 from pathlib import Path
 from typing import Annotated
 
@@ -9,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from models import User
 from routes import auth, group, file_upload, admin, results, battle
 from routes.auth import get_current_active_user
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # to get a string like this run:
 # openssl rand -hex 32
