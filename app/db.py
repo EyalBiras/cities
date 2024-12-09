@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from app.models import Group
+from models import Group
 BASE_PATH = Path("../groups")
 GROUPS_DB_SAVE_FILE = Path("../dbs/groups_db.json")
 USERS_DB_SAVE_FILE = Path("../dbs/users_db.json")

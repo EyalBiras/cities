@@ -8,7 +8,7 @@ from jwt import InvalidTokenError
 from passlib.context import CryptContext
 
 from app.db import users_db, set_user, save_users_db
-from ..models import User, UserInDB, Token, TokenData, UserCreate
+from app.models import User, UserInDB, Token, TokenData, UserCreate
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
