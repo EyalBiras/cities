@@ -1,8 +1,8 @@
-import signal
+import _thread
 import platform
+import signal
 import threading
 from contextlib import contextmanager
-import _thread
 
 
 @contextmanager
@@ -35,7 +35,3 @@ def timeout(seconds: int) -> None:
                 raise TimeoutError(f"Code block timed out after {seconds} seconds")
         finally:
             timer.cancel()
-
-with timeout(3):
-    while True:
-        print("hi")

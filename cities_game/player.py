@@ -1,6 +1,7 @@
-from cities_game.city import City
 from cities_game.capital_city import Capital
+from cities_game.city import City
 from cities_game.group import Group
+
 
 class Player:
     def __init__(self, cities: list[City], capital_city: Capital | None, groups: list[Group]) -> None:
@@ -10,13 +11,11 @@ class Player:
         self.conquered_cities = []
         self.lost_cities = []
 
-    def convert_actions(self, action):
+    def convert_actions(self, action: list[City]) -> None:
         cities = self.cities + [self.capital_city]
         if action[0] not in cities:
-            return None
+            return
         action[0] = cities.index(action[0])
-
-
 
     def update_groups(self) -> None:
         for group in self.groups:
@@ -66,10 +65,8 @@ class Player:
             self.cities.remove(city)
         self.lost_cities = []
 
-
     def update_conquered_cities(self):
         for city in self.conquered_cities:
             city.people_amount *= -1
             self.cities.append(city)
         self.conquered_cities = []
-

@@ -3,10 +3,11 @@ from pathlib import Path
 from typing import Any
 
 from models import Group
+
 file = Path(__file__)
 BASE_PATH = file.parent.parent / "groups"
-GROUPS_DB_SAVE_FILE = file.parent.parent / "dbs" /"groups_db.json"
-USERS_DB_SAVE_FILE = file.parent.parent / "dbs" /"users_db.json"
+GROUPS_DB_SAVE_FILE = file.parent.parent / "dbs" / "groups_db.json"
+USERS_DB_SAVE_FILE = file.parent.parent / "dbs" / "users_db.json"
 
 
 def load_users_db() -> dict[str, dict[str, Any]]:
@@ -22,6 +23,7 @@ def load_groups_db() -> list[Group]:
 
 users_db = load_users_db()
 
+
 def set_user(username: str, hashed_password: str):
     users_db[username] = {
         "username": username,
@@ -30,10 +32,13 @@ def set_user(username: str, hashed_password: str):
         "disabled": False,
     }
 
+
 def get_user(username: str):
     return users_db[username]
 
+
 groups_db: list[Group] = load_groups_db()
+
 
 def get_group_by_name(group_name):
     for group in groups_db:
@@ -50,6 +55,7 @@ def save_groups_db() -> None:
     groups = [group.model_dump(mode="json") for group in groups_db]
     with open(GROUPS_DB_SAVE_FILE, 'w') as f:
         json.dump(groups, f, indent=2)
+
 
 def get_group_directory(group: str) -> Path:
     return BASE_PATH / Path(group)

@@ -2,11 +2,12 @@ import copy
 import time
 
 from PIL import Image, ImageDraw, ImageFont
-from cities_game.timeout import timeout
+
 from cities_game.bot import Bot
 from cities_game.city import City
 from cities_game.game import Game
 from cities_game.player import Player
+from cities_game.timeout import timeout
 
 TIME_LIMIT = 2
 
@@ -44,7 +45,7 @@ class Engine:
     def create_game_enemy(self) -> Game:
         return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player), copy.deepcopy(self.neutral))
 
-    def convert_city(self, city: City):
+    def convert_city(self, city: City) -> City:
         cities = self.player.cities + [self.player.capital_city]
         if city in cities:
             return cities[cities.index(city)]
@@ -56,7 +57,7 @@ class Engine:
             return cities[cities.index(city)]
         raise CityNotFoundERROR()
 
-    def convert_action(self, action):
+    def convert_action(self, action) -> list[str]:
         action[0] = self.convert_city(action[0])
         if action[1] == "send":
             action[2] = self.convert_city(action[2])

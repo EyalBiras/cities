@@ -6,14 +6,15 @@ from fastapi.responses import FileResponse
 
 from db import groups_db
 from models import User
-from .auth import get_current_active_user
 from tournament import battle
+from .auth import get_current_active_user
 
 router = APIRouter()
 
 BASE_PATH = Path("../groups")
 
 battles_requests = set()
+
 
 def get_group_directory(group: str) -> Path:
     return BASE_PATH / Path(group)
@@ -31,6 +32,7 @@ async def battle_group(
         if group.name != current_user.group:
             groups_to_battle.append(group)
     return groups_to_battle
+
 
 @router.get("/battle/{group_name}")
 async def battle_group(

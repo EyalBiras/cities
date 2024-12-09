@@ -5,14 +5,15 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from cities_game import engine
-BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval", "TimeoutError", "input", "socket", "json", "yaml"]
+
+BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval", "TimeoutError", "input", "socket", "json",
+                "yaml"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
-file = Path(__file__)
-GROUPS = file.parent  / "groups"
-GAMES_BASE_PATH = file.parent
+FILE = Path(__file__)
+GROUPS = FILE.parent / "groups"
+GAMES_BASE_PATH = FILE.parent
 TOURNAMENT_CODE_DIR = "tournament_code"
-RESULTS_FILE = file.parent  / "results.json"
+RESULTS_FILE = FILE.parent / "results.json"
 EXCEPT_EXCEPTION_PATTERN = r"^\s*except\s+Exception\s*(?:as\s+\w+)?\s*:\s*$"
 
 
@@ -86,7 +87,8 @@ def battle(group: Path, enemy: Path, games_directory: str = "games") -> None:
     game_path.unlink()
 
 
-def run_game(group1: Path, group2: Path, games_directory: str = GAMES_BASE_PATH / "games", code_directory: str = TOURNAMENT_CODE_DIR):
+def run_game(group1: Path, group2: Path, games_directory: str = GAMES_BASE_PATH / "games",
+             code_directory: str = TOURNAMENT_CODE_DIR):
     game_path = GAMES_BASE_PATH / f"{group1.name}-{group2.name}.py"
     with open(game_path, "w") as f:
         f.write("from cities_game.engine import Engine\n")

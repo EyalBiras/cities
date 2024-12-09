@@ -2,16 +2,19 @@ import json
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
+
 from db import groups_db
 from models import User
 from .auth import get_current_active_user
+
 file = Path(__file__)
 RESULTS_FILE = file.parent.parent.parent / "results.json"
 GAMES_DIRECTORY = file.parent.parent.parent / "games"
 
 router = APIRouter()
+
 
 @router.get("/get_tournament_results")
 async def get_tournament_results(
@@ -22,6 +25,7 @@ async def get_tournament_results(
     sorted_results = sorted(results.items(), key=lambda x: x[1]["total score"], reverse=True)
     print(sorted_results)
     return dict(sorted_results)
+
 
 @router.get("/get_group_games/{group_name}")
 async def get_group_games(group_name: str):
@@ -35,13 +39,13 @@ async def get_group_games(group_name: str):
             group_games.append(game.name)
     return group_games
 
+
 @router.get("/download_game/{filename}")
 async def download_file(
-    filename: str
+        filename: str
 ):
     game_path = GAMES_DIRECTORY / Path(filename)
     if not game_path.is_file():
         raise HTTPException(status_code=404, detail="File not found.")
-
 
     return FileResponse(game_path, media_type="application/octet-stream", filename=filename)
