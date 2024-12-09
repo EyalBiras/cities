@@ -147,7 +147,7 @@ class Engine:
         image = Image.new('RGB', (1000, 1000), color='white')
         draw = ImageDraw.Draw(image)
         font = ImageFont.load_default()
-        names_font = ImageFont.truetype("arial.ttf", 30)
+        names_font = ImageFont.load_default(size=30)
         draw.text((300, 50), f"{self.player_name}", fill="black", font=names_font)
         draw.text((300, 400), f"{self.enemy_name}", fill="black", font=names_font)
         self.draw_player(self.player, draw, font, "blue", "yellow", "cyan")

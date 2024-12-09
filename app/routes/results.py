@@ -7,9 +7,9 @@ from fastapi.responses import FileResponse
 from db import groups_db
 from models import User
 from .auth import get_current_active_user
-
-RESULTS_FILE = Path("../results.json")
-GAMES_DIRECTORY = Path("../games")
+file = Path(__file__)
+RESULTS_FILE = file.parent.parent.parent / "results.json"
+GAMES_DIRECTORY = file.parent.parent.parent / "games"
 
 router = APIRouter()
 
