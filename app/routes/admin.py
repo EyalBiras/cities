@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 import tournament
-from app.models import User
-from app.routes.auth import get_current_active_user
+from models import User
+from .auth import get_current_active_user
 
 router = APIRouter()
 

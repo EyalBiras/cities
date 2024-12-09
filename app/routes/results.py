@@ -4,9 +4,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
-from app.db import groups_db
-from app.models import User
-from app.routes.auth import get_current_active_user
+from db import groups_db
+from models import User
+from .auth import get_current_active_user
 
 RESULTS_FILE = Path("../results.json")
 GAMES_DIRECTORY = Path("../games")

@@ -1,14 +1,14 @@
 import zipfile
 from pathlib import Path
 from typing import Annotated
-from fastapi.staticfiles import StaticFiles
-from fastapi import BackgroundTasks
 
-from app.models import User
-from app.routes.auth import get_current_active_user
-import uvicorn
-from fastapi import APIRouter, File, UploadFile, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, Depends, HTTPException
+from fastapi import BackgroundTasks
 from fastapi.responses import FileResponse
+
+from models import User
+from .auth import get_current_active_user
+
 DEVELOPMENT_CODE_DIR = "development_code"
 ONE_MEGABYTE = 1048576
 MAX_SIZE = ONE_MEGABYTE
@@ -24,8 +24,10 @@ def is_hidden_file(file: Path) -> bool:
     if file.name[-1] == "_":
         return True
 
+
 def is_python(file: Path) -> bool:
     return file.name.endswith(".py")
+
 
 def get_group_directory(group: str) -> Path:
     return BASE_PATH / Path(group)

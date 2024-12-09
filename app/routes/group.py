@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Form
 
-from app.db import users_db, groups_db, get_user, get_group_by_name, save_groups_db, save_users_db
-from app.models import User, Group
-from app.routes.auth import get_current_active_user
+from db import users_db, groups_db, get_user, get_group_by_name, save_groups_db, save_users_db
+from models import User, Group
+from .auth import get_current_active_user
 
 
 def verify_group_name(group_name: str) -> bool:
