@@ -5,11 +5,13 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from cities_game import engine
 print(__file__)
 BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval", "TimeoutError"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
 file = Path(__file__)
 GROUPS = file.parent  / "groups"
+GAMES_BASE_PATH = file.parent
 TOURNAMENT_CODE_DIR = "tournament_code"
 RESULTS_FILE = file.parent  / "results.json"
 EXCEPT_EXCEPTION_PATTERN = r"^\s*except\s+Exception\s*(?:as\s+\w+)?\s*:\s*$"
@@ -63,8 +65,7 @@ def validate_group(group: Path) -> bool:
 def battle(group: Path, enemy: Path, games_directory: str = "games") -> None:
     if not validate_group(group / "development_code") or not validate_group(enemy / TOURNAMENT_CODE_DIR):
         return
-
-    game_path = Path(f"../{group.name}-{enemy.name}.py")
+    game_path = GAMES_BASE_PATH / f"{group.name}-{enemy.name}.py"
     with open(game_path, "w") as f:
         f.write("from cities_game.engine import Engine\n")
         f.write("from utils import reset_game\n")
@@ -83,10 +84,11 @@ def battle(group: Path, enemy: Path, games_directory: str = "games") -> None:
         f.write(f"\tgame_file = r'{games_directory}\\{group.name} vs {enemy.name}-winner-' + winner + '.mp4'\n")
         f.write(f"\timages_to_video(game, game_file)")
     subprocess.run([sys.executable, game_path])
+    game_path.unlink()
 
 
-def run_game(group1: Path, group2: Path, games_directory: str = "../games", code_directory: str = TOURNAMENT_CODE_DIR):
-    game_path = Path(f"../{group1.name}-{group2.name}.py")
+def run_game(group1: Path, group2: Path, games_directory: str = GAMES_BASE_PATH / "games", code_directory: str = TOURNAMENT_CODE_DIR):
+    game_path = GAMES_BASE_PATH / f"{group1.name}-{group2.name}.py"
     with open(game_path, "w") as f:
         f.write("from cities_game.engine import Engine\n")
         f.write("from utils import reset_game\n")
@@ -96,7 +98,7 @@ def run_game(group1: Path, group2: Path, games_directory: str = "../games", code
         f.write(f"from pathlib import Path\n")
         f.write(f"import json\n")
         f.write(f"\n")
-        f.write(f"RESULTS_FILE = Path('../results.json')\n")
+        f.write(f"RESULTS_FILE = Path(r'{RESULTS_FILE}')\n")
         f.write(f"\n")
         f.write(f"if __name__ == '__main__':\n")
         f.write(f"\tp1, p2, neutral_player = reset_game()\n")
@@ -119,14 +121,14 @@ def run_game(group1: Path, group2: Path, games_directory: str = "../games", code
         f.write(f"\twith open(RESULTS_FILE, 'w') as f:\n")
         f.write(f"\t\tjson.dump(results, f, indent=2)\n")
         f.write(f"\n")
-        f.write(f"\tgame_file = '{games_directory}\\{group1.name} vs {group2.name}-winner-' + winner + '.mp4v'\n")
+        f.write(f"\tgame_file = r'{games_directory}\\{group1.name} vs {group2.name}-winner-' + winner + '.mp4v'\n")
         f.write(f"\timages_to_video(game, game_file)")
     subprocess.run([sys.executable, game_path])
     game_path.unlink()
 
 
 def move_development_to_tournament(group: str) -> None:
-    shutil.copytree(Path(fr"..\groups\{group}\development_code"), fr"..\groups\{group}\{TOURNAMENT_CODE_DIR}",
+    shutil.copytree(GROUPS / f"{group}" / "development_code", GROUPS / f"{group}" / TOURNAMENT_CODE_DIR,
                     dirs_exist_ok=True)
 
 
