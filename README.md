@@ -117,7 +117,15 @@ Represents the bot controlling a player's actions.
 ---
 
 ## Example Code
-The document includes a sample bot implementation and demonstrates the structure of the `do_turn()` function. Refer to the provided example for details.
+Below is an example implementation of a simple bot:
 
----
+```python
+from cities_game.game import Game
+from cities_game.bot import Bot
 
+class MyBot(Bot):
+    def do_turn(self, game: Game) -> None:
+        if game.get_my_city_capital().people_amount > 10:
+            cities = [game.get_my_city_capital()]
+            for city in cities:
+                city.send_group(game.get_enemy_city_capital(), game.get_my_city_capital().people_amount - 5)
