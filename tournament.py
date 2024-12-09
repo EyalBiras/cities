@@ -6,8 +6,7 @@ import sys
 import time
 from pathlib import Path
 from cities_game import engine
-print(__file__)
-BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval", "TimeoutError"]
+BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval", "TimeoutError", "input", "socket", "json", "yaml"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
 file = Path(__file__)
 GROUPS = file.parent  / "groups"
