@@ -3,9 +3,10 @@ from pathlib import Path
 from typing import Any
 
 from models import Group
-BASE_PATH = Path("../groups")
-GROUPS_DB_SAVE_FILE = Path("../dbs/groups_db.json")
-USERS_DB_SAVE_FILE = Path("../dbs/users_db.json")
+file = Path(__file__)
+BASE_PATH = file.parent.parent / "groups"
+GROUPS_DB_SAVE_FILE = file.parent.parent / "dbs" /"groups_db.json"
+USERS_DB_SAVE_FILE = file.parent.parent / "dbs" /"users_db.json"
 
 
 def load_users_db() -> dict[str, dict[str, Any]]:
