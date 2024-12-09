@@ -15,7 +15,8 @@ MAX_SIZE = ONE_MEGABYTE
 MAX_SIZE_STR = "1mb"
 MAX_AMOUNT_OF_FILES = 40
 router = APIRouter()
-BASE_PATH = Path("../groups")
+file = Path(__file__)
+BASE_PATH = file.parent.parent.parent / "groups"
 
 
 def is_hidden_file(file: Path) -> bool:

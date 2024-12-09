@@ -8,9 +8,10 @@ from pathlib import Path
 
 BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval", "TimeoutError"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
-GROUPS = Path("../groups")
+file = Path(__file__)
+GROUPS = file.parent  / "groups"
 TOURNAMENT_CODE_DIR = "tournament_code"
-RESULTS_FILE = Path("../results.json")
+RESULTS_FILE = file.parent  / "results.json"
 EXCEPT_EXCEPTION_PATTERN = r"^\s*except\s+Exception\s*(?:as\s+\w+)?\s*:\s*$"
 
 
