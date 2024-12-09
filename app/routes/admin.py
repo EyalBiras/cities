@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-import tournament
+from ... import tournament
 from models import User
 from .auth import get_current_active_user
 
