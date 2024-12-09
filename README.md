@@ -92,7 +92,7 @@ Represents a group of people traveling between cities.
 ---
 
 ### Player
-The **Player** class is not currently part of the API but may be added in future updates. Once implemented, it is expected to manage player-specific data such as their cities, groups, and overall strategy.
+The **Player** class is not currently part of the API but may be added in future updates. 
 
 ---
 
