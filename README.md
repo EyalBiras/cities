@@ -8,11 +8,12 @@ This project is a two-player strategy game where players compete to dominate the
 - [Classes and API](#classes-and-api)
   - [Game](#game)
   - [City](#city)
+  - [Capital](#capital)
   - [Group](#group)
+  - [Player](#player)
   - [Bot](#bot)
 - [Bot Implementation Guidelines](#bot-implementation-guidelines)
 - [Example Code](#example-code)
-- [License](#license)
 
 ## Game Rules
 1. **Map Setup**: 
@@ -69,6 +70,14 @@ Represents a city in the game.
 
 ---
 
+### Capital
+Currently behaves like a regular city but may be expanded with unique features in future updates. 
+
+For now, it inherits all properties and methods from the **City** class.
+
+---
+
+
 ### Group
 Represents a group of people traveling between cities.
 
@@ -79,6 +88,11 @@ Represents a group of people traveling between cities.
 - **`turns_till_arrival`**: Turns left until arrival.
 - **`position`**: The group's current position.
 - **`speed`**: Speed of the group.
+
+---
+
+### Player
+The **Player** class is not currently part of the API but may be added in future updates. Once implemented, it is expected to manage player-specific data such as their cities, groups, and overall strategy.
 
 ---
 
@@ -107,5 +121,3 @@ The document includes a sample bot implementation and demonstrates the structure
 
 ---
 
-## License
-This project is governed by the rules specified in the document. Please adhere to the guidelines to ensure fair and secure gameplay.
