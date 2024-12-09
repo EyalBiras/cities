@@ -5,7 +5,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-
+print(__file__)
 BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval", "TimeoutError"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
 file = Path(__file__)
