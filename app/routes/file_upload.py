@@ -25,8 +25,6 @@ def is_hidden_file(file: Path) -> bool:
         return True
 
 def is_python(file: Path) -> bool:
-    if not file.is_file():
-        return False
     return file.name.endswith(".py")
 
 def get_group_directory(group: str) -> Path:
