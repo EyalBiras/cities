@@ -36,49 +36,49 @@ async def read_users_me(
 
 @app.get("/", response_class=HTMLResponse)
 async def get_home_page():
-    with open("static/index.html") as f:
+    with open(static_directory / "index.html") as f:
         return HTMLResponse(content=f.read())
 
 
 @app.get("/signup.html", response_class=HTMLResponse)
 async def get_signup_page():
-    with open("static/signup.html") as f:
+    with open(static_directory /"signup.html") as f:
         return HTMLResponse(content=f.read())
 
 
 @app.get("/dashboard.html", response_class=HTMLResponse)
 async def get_dashboard_page():
-    with open("static/dashboard.html") as f:
+    with open(static_directory /"dashboard.html") as f:
         return HTMLResponse(content=f.read())
 
 
 @app.get("/files.html", response_class=HTMLResponse)
 async def get_files_page():
-    with open("static/files.html") as f:
+    with open(static_directory /"files.html") as f:
         return HTMLResponse(content=f.read())
 
 
 @app.get("/groups.html", response_class=HTMLResponse)
 async def get_groups_page():
-    with open("static/groups.html") as f:
+    with open(static_directory /"groups.html") as f:
         return HTMLResponse(content=f.read())
 
 
 @app.get("/admin.html", response_class=HTMLResponse)
 async def get_admin_page():
-    with open("static/admin.html") as f:
+    with open(static_directory /"admin.html") as f:
         return HTMLResponse(content=f.read())
 
 
 @app.get("/results.html", response_class=HTMLResponse)
 async def get_results_page():
-    with open("static/results.html") as f:
+    with open(static_directory /"results.html") as f:
         return HTMLResponse(content=f.read())
 
 
 @app.get("/battle.html", response_class=HTMLResponse)
 async def get_battle_page():
-    with open("static/battle.html") as f:
+    with open(static_directory /"battle.html") as f:
         return HTMLResponse(content=f.read())
 
 
