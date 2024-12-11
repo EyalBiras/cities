@@ -6,8 +6,9 @@ import sys
 import time
 from pathlib import Path
 
-BANNED_WORDS = ["os", "Engine", "open", "open(", "pathlib", "sys", "eval", "TimeoutError", "input", "socket", "json",
-                "yaml"]
+BANNED_WORDS = ["TimeoutError", "Engine"]
+BANNED_FUNCTIONS = ["open", "input", "eval", "exec", "compile", "memoryview", "exit", "__import__"]
+ALLOWED_MODULES = ["cities_game","cities_game.capital_city","cities_game.game","cities_game.group","cities_game.bot","cities_game.city","abc", "collections", "itertools", "numpy", "enum", "math", "dataclasses"]
 NEEDED_WORDS_FOR_MAIN = ["class MyBot(Bot):"]
 FILE = Path(__file__)
 GROUPS = FILE.parent / "groups"
@@ -16,6 +17,40 @@ TOURNAMENT_CODE_DIR = "tournament_code"
 RESULTS_FILE = FILE.parent / "results.json"
 EXCEPT_EXCEPTION_PATTERN = r"^\s*except\s+Exception\s*(?:as\s+\w+)?\s*:\s*$"
 
+
+def get_all_import_modules(text: str) -> list[str]:
+    pattern = r"(from\s+(\S+)\s+import|import\s+(\S+))"
+    modules = [match[1] if match[1] else match[2] for match in re.findall(pattern, text)]
+    return modules
+
+def validate_imports(modules: list[str], group_files: list[str]) -> bool:
+    allowed_modules = ALLOWED_MODULES + group_files
+    for module in modules:
+        if module not in allowed_modules:
+            return False
+    return True
+
+def is_function_appear(contents: str, function_name: str) -> bool:
+    pattern = fr"\b{function_name}\b"
+    return bool(re.search(pattern, contents))
+
+def validate_main(contents: str) -> bool:
+    for word in NEEDED_WORDS_FOR_MAIN:
+        if word not in contents:
+            return False
+    return True
+
+def validate_functions(contents: str) -> bool:
+    for function in BANNED_FUNCTIONS:
+        if is_function_appear(contents, function_name=function):
+            return False
+    return True
+
+def validate_bad_words(contents: str) -> bool:
+    for word in BANNED_WORDS:
+        if word in contents:
+            return False
+    return True
 
 def is_python(file: Path) -> bool:
     if not file.is_file():
@@ -29,20 +64,25 @@ def reset_results(groups: list[str]) -> None:
         json.dump(results, f, indent=2)
 
 
-def validate_file(file: Path) -> bool:
+def validate_file(file: Path, group_files: list[str]) -> bool:
+    with open(file) as f:
+        contents = f.read()
+
+    if not validate_imports(get_all_import_modules(contents), group_files):
+        return False
+
     if file.name == "main.py":
         with open(file, "r") as f:
             contents = f.read()
-            for word in NEEDED_WORDS_FOR_MAIN:
-                if word not in contents:
-                    return False
+            if not validate_main(contents):
+                return False
 
     with open(file, "r") as f:
         contents = f.read()
-        for word in BANNED_WORDS:
-            if word in contents:
-                return False
-
+        if not validate_bad_words(contents):
+            return False
+        if not validate_functions(contents):
+            return False
         lines = contents.splitlines()
         for line in lines:
             if re.match(EXCEPT_EXCEPTION_PATTERN, line):
@@ -52,17 +92,17 @@ def validate_file(file: Path) -> bool:
 
 def validate_group(group: Path) -> bool:
     files = [Path(file) for file in group.rglob("*") if is_python(file)]
-    print(files)
+    group_files = [file.name.replace(".py","") for file in files]
     found_main = False
     for file in files:
         if file.name == "main.py":
             found_main = True
-        if not validate_file(files[0]):
+        if not validate_file(files[0], group_files):
             return False
     return found_main
 
 
-def battle(group: Path, enemy: Path, games_directory: str = "games") -> None:
+def battle(group: Path, enemy: Path, games_directory: Path) -> None:
     if not validate_group(group / "development_code") or not validate_group(enemy / TOURNAMENT_CODE_DIR):
         return
     game_path = GAMES_BASE_PATH / f"{group.name}-{enemy.name}.py"
@@ -143,9 +183,11 @@ def run_tournament():
         for group2 in groups[i + 1:]:
             print(f"{group} vs {group2}")
             run_game(Path(f"groups/{group}"), Path(f"groups/{group2}"))
+
+    with open(RESULTS_FILE) as f:
+        results = json.load(f)
+
     for group in groups:
-        with open(RESULTS_FILE) as f:
-            results = json.load(f)
         results[group]["total score"] = results[group]["wins"] + 0.5 * results[group]["draws"]
     with open(RESULTS_FILE, 'w') as f:
         json.dump(results, f, indent=2)

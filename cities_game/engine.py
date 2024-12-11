@@ -40,10 +40,10 @@ class Engine:
         self.turn = 1
 
     def create_game_player(self) -> Game:
-        return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy), copy.deepcopy(self.neutral))
+        return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy), copy.deepcopy(self.neutral), self.turn)
 
     def create_game_enemy(self) -> Game:
-        return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player), copy.deepcopy(self.neutral))
+        return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player), copy.deepcopy(self.neutral), self.turn)
 
     def convert_city(self, city: City) -> City:
         cities = self.player.cities + [self.player.capital_city]
@@ -71,8 +71,8 @@ class Engine:
                 self.player_bot.do_turn(player_game)
             t_end = time.perf_counter()
             self.player_time += t_end - t_start
-            player_actions = [city.action for city in player_game.__player.cities]
-            player_actions.append(player_game.__player.capital_city.action)
+            player_actions = [city.action for city in player_game.player.cities]
+            player_actions.append(player_game.player.capital_city.action)
             self.player_actions = [self.convert_action(action) for action in player_actions if action is not None]
         except Exception as e:
             self.winner = "enemy"
@@ -85,8 +85,8 @@ class Engine:
                 self.enemy_bot.do_turn(enemy_game)
             t_end = time.perf_counter()
             self.enemy_time += t_end - t_start
-            enemy_actions = [city.action for city in enemy_game.__player.cities]
-            enemy_actions.append(enemy_game.__player.capital_city.action)
+            enemy_actions = [city.action for city in enemy_game.player.cities]
+            enemy_actions.append(enemy_game.player.capital_city.action)
             self.enemy_actions = [self.convert_action(action) for action in enemy_actions if action is not None]
         except Exception as e:
             self.winner = "player"

@@ -6,28 +6,28 @@ from cities_game.player import Player
 
 class Game:
     def __init__(self, player: Player, enemy: Player, neutral: Player, turn: int) -> None:
-        self.__player = player
-        self.__enemy = enemy
+        self.player = player
+        self.enemy = enemy
         self.__neutral = neutral
         self.__turn = turn
 
     def get_enemy_cities(self) -> list[City]:
-        return self.__enemy.cities
+        return self.enemy.cities
 
     def get_enemy_city_capital(self) -> Capital:
-        return self.__enemy.capital_city
+        return self.enemy.capital_city
 
     def get_enemy_groups(self) -> list[Group]:
-        return self.__enemy.groups
+        return self.enemy.groups
 
     def get_my_cities(self) -> list[City]:
-        return self.__player.cities
+        return self.player.cities
 
     def get_my_city_capital(self) -> Capital:
-        return self.__player.capital_city
+        return self.player.capital_city
 
     def get_my_groups(self) -> list[Group]:
-        return self.__player.groups
+        return self.player.groups
 
     def get_neutral_cities(self) -> list[City]:
         return self.__neutral.cities

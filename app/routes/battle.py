@@ -10,8 +10,8 @@ from tournament import battle
 from .auth import get_current_active_user
 
 router = APIRouter()
-
-BASE_PATH = Path("../groups")
+FILE = Path(__file__)
+BASE_PATH = FILE.parent.parent.parent / "groups"
 
 battles_requests = set()
 
@@ -48,9 +48,9 @@ async def battle_group(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Your group already started a battle!")
     battles_requests.add(current_user.group)
-    enemy_group = Path(f"groups/{group_name}")
-    user_group = Path(f"groups/{current_user.group}")
-    games_directory = rf"..\groups\{current_user.group}\battles"
+    enemy_group = get_group_directory(group_name)
+    user_group = get_group_directory(current_user.group)
+    games_directory = user_group / "battles"
     for game in Path(games_directory).glob("*"):
         if group_name in game.name:
             game.unlink()
