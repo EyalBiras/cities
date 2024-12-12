@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters":{
+    "simple":
+    {
+      "format": "%(levelname)s: %(message)s"
+    },
+    "detailed": {
+      "format": "[%(levelname)s | %(module)s| %(lineno)d]: %(message)s"
+    }
+    },
+  "handlers": {
+    "file": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "DEBUG",
+      "formatter": "detailed",
+      "maxBytes": 100000,
+      "filename": "log.log",
+      "backupCount": 1
+    }
+  },
+  "loggers": {
+    "root": {
+      "level": "ERROR",
+      "handlers":[
+        "file"
+      ]
+    }
+  }
+}

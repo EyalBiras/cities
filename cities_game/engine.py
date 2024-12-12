@@ -1,5 +1,10 @@
 import copy
+import json
+import logging
+import logging.config
+import sys
 import time
+from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -9,8 +14,25 @@ from cities_game.game import Game
 from cities_game.player import Player
 from cities_game.timeout import timeout
 
+LOG_CONFIGURATION_FILE = Path(__file__).parent / "log.json"
+GROUPS_DIRECTORY = Path(__file__).parent.parent / "groups"
 TIME_LIMIT = 2
 
+
+def setup_logging(group: str, log_file: str, needs_logging=True) -> logging.Logger:
+    logger = logging.getLogger(group)
+    with open(LOG_CONFIGURATION_FILE, "r") as f:
+        configuration = json.load(f)
+    configuration["handlers"]["file"]["filename"] = log_file
+    configuration["loggers"] = {}
+    configuration["loggers"][group] = {
+        "level": "DEBUG",
+        "handlers": [
+            "file"
+        ]
+    }
+    logging.config.dictConfig(configuration)
+    return logger
 
 class CityNotFoundERROR(Exception):
     pass
@@ -24,26 +46,40 @@ class Engine:
                  enemy: Player,
                  enemy_bot: Bot,
                  enemy_name: str,
-                 neutral: Player) -> None:
+                 neutral: Player,
+                 is_tournament: bool = True) -> None:
         self.player = player
         self.player_bot = player_bot
         self.player_name = player_name
         self.player_actions = []
         self.player_time = 0
+        self.player_log_file = GROUPS_DIRECTORY / player_name / "battles" / enemy_name / "battle.log"
+        self.player_log_file.parent.mkdir(exist_ok=True)
+        with open(self.player_log_file, "w") as f:
+            pass
+        self.player_logger = setup_logging(player_name, str(self.player_log_file))
+
         self.enemy = enemy
         self.enemy_bot = enemy_bot
         self.enemy_name = enemy_name
         self.enemy_actions = []
         self.enemy_time = 0
+        self.enemy_log_file = GROUPS_DIRECTORY / enemy_name / "battles" / player_name / "battle.log"
+        self.enemy_log_file.parent.mkdir(exist_ok=True)
+        with open(self.enemy_log_file, "w") as f:
+            pass
+        self.enemy_logger = setup_logging(enemy_name, str(self.enemy_log_file))
+
         self.neutral = neutral
         self.winner = None
         self.turn = 1
+        self.is_tournament = is_tournament
 
     def create_game_player(self) -> Game:
-        return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy), copy.deepcopy(self.neutral), self.turn)
+        return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy), copy.deepcopy(self.neutral), self.turn, self.player_logger)
 
     def create_game_enemy(self) -> Game:
-        return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player), copy.deepcopy(self.neutral), self.turn)
+        return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player), copy.deepcopy(self.neutral), self.turn, self.enemy_logger)
 
     def convert_city(self, city: City) -> City:
         cities = self.player.cities + [self.player.capital_city]
@@ -66,7 +102,7 @@ class Engine:
     def do_turn(self) -> None:
         player_game = self.create_game_player()
         try:
-            with timeout(TIME_LIMIT):
+            with timeout(TIME_LIMIT + 10000):
                 t_start = time.perf_counter()
                 self.player_bot.do_turn(player_game)
             t_end = time.perf_counter()
@@ -79,6 +115,7 @@ class Engine:
             return
 
         enemy_game = self.create_game_enemy()
+
         try:
             with timeout(TIME_LIMIT):
                 t_start = time.perf_counter()
@@ -172,4 +209,9 @@ class Engine:
         images = []
         while self.winner is None:
             images.append(self.draw())
+
+        logging.shutdown()
+        if self.is_tournament:
+            self.player_log_file.unlink(missing_ok=True)
+        self.enemy_log_file.unlink(missing_ok=True)
         return images, self.winner

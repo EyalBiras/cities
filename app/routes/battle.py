@@ -1,6 +1,7 @@
+import pathlib
 from pathlib import Path
 from typing import Annotated
-
+import shutil
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 
@@ -53,7 +54,7 @@ async def battle_group(
     games_directory = user_group / "battles"
     for game in Path(games_directory).glob("*"):
         if group_name in game.name:
-            game.unlink()
+            shutil.rmtree(game)
     battle(group=user_group, enemy=enemy_group, games_directory=games_directory)
     battles_requests.remove(current_user.group)
 
@@ -74,17 +75,33 @@ async def get_group_games(current_user: Annotated[User, Depends(get_current_acti
     return group_battles
 
 
-@router.get("/download_battle/{filename}")
+@router.get("/get_battle/{enemy}")
+async def get_battle(
+        current_user: Annotated[User, Depends(get_current_active_user)],
+        enemy: str
+):
+    if current_user.group is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Please be in a group to download battles")
+    games_directory = Path(f"../groups/{current_user.group}/battles/")
+    games_directory = games_directory / enemy
+    group_battle = []
+    for game in games_directory.glob("*"):
+        group_battle.append(game.name)
+    return group_battle
+
+@router.get("/download_battle/{enemy}/{filename}")
 async def download_file(
         current_user: Annotated[User, Depends(get_current_active_user)],
+        enemy: str,
         filename: str
 ):
     if current_user.group is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Please be in a group to download battles")
-    games_directory = Path(f"../groups/{current_user.group}/battles")
+    games_directory = Path(f"../groups/{current_user.group}/battles/{enemy}")
     game_path = games_directory / Path(filename)
+    print(game_path)
     if not game_path.is_file():
         raise HTTPException(status_code=404, detail="File not found.")
-
-    return FileResponse(game_path, media_type="application/octet-stream", filename=filename)
+    return FileResponse(game_path, media_type="application/octet-stream", filename=Path(filename).name)

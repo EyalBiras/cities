@@ -1,3 +1,5 @@
+import logging
+
 from cities_game.capital_city import Capital
 from cities_game.city import City
 from cities_game.group import Group
@@ -5,11 +7,12 @@ from cities_game.player import Player
 
 
 class Game:
-    def __init__(self, player: Player, enemy: Player, neutral: Player, turn: int) -> None:
+    def __init__(self, player: Player, enemy: Player, neutral: Player, turn: int, logger: logging.Logger) -> None:
         self.player = player
         self.enemy = enemy
         self.__neutral = neutral
         self.__turn = turn
+        self.logger = logger
 
     def get_enemy_cities(self) -> list[City]:
         return self.enemy.cities
