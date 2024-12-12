@@ -118,13 +118,13 @@ def battle(group: Path, enemy: Path, games_directory: Path) -> None:
         f.write(f"if __name__ == '__main__':\n")
         f.write(f"\tp1, p2, neutral_player = reset_game()\n")
         f.write(
-            f"\te = Engine(p1,{group.name}.MyBot(),'{group.name}', p2,{enemy.name}.MyBot(), '{enemy.name}', neutral_player)\n")
+            f"\te = Engine(p1,{group.name}.MyBot(),'{group.name}', p2,{enemy.name}.MyBot(), '{enemy.name}', neutral_player, is_tournament=False)\n")
         f.write(f"\tgame, winner = e.play()\n")
         f.write(f"\n")
-        f.write(f"\tgame_file = r'{games_directory}\\{group.name} vs {enemy.name}-winner-' + winner + '.mp4'\n")
+        f.write(f"\tgame_file = r'{games_directory}\\{enemy.name}\\{group.name} vs {enemy.name}-winner-' + winner + '.mp4'\n")
         f.write(f"\timages_to_video(game, game_file)")
     subprocess.run([sys.executable, game_path])
-    game_path.unlink()
+    # game_path.unlink()
 
 
 def run_game(group1: Path, group2: Path, games_directory: str = GAMES_BASE_PATH / "games",

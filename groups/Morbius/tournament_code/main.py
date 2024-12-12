@@ -4,4 +4,4 @@ import numpy as np
 
 class MyBot(Bot):
     def do_turn(self, game: Game) -> None:
-        pass
+        game.logger.debug("hello world")

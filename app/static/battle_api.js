@@ -48,10 +48,10 @@ async function getBattlesAPI() {
   }
 }
 
-async function downloadBattleAPI(filename) {
+async function downloadBattleAPI(enemy, filename) {
   const token = getAuthToken();
   try {
-    const response = await fetch(`/download_battle/${filename}`, {
+    const response = await fetch(`/download_battle/${enemy}/${filename}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
