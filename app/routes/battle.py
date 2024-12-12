@@ -39,6 +39,8 @@ async def battle_group(
 async def battle_group(
         current_user: Annotated[User, Depends(get_current_active_user)],
         group_name: str):
+    with open("log.txt", "a") as f:
+        f.write(str(battles_requests))
     if group_name not in [group.name for group in groups_db]:
         raise HTTPException(status_code=400,
                             detail="Please enter a valid group!")
@@ -48,6 +50,7 @@ async def battle_group(
     if current_user.group in battles_requests:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Your group already started a battle!")
+
     battles_requests.add(current_user.group)
     enemy_group = get_group_directory(group_name)
     user_group = get_group_directory(current_user.group)

@@ -124,7 +124,7 @@ def battle(group: Path, enemy: Path, games_directory: Path) -> None:
         f.write(f"\tgame_file = r'{games_directory}\\{enemy.name}\\{group.name} vs {enemy.name}-winner-' + winner + '.mp4'\n")
         f.write(f"\timages_to_video(game, game_file)")
     subprocess.run([sys.executable, game_path])
-    game_path.unlink()
+    # game_path.unlink()
 
 
 def run_game(group1: Path, group2: Path, games_directory: str = GAMES_BASE_PATH / "games",

@@ -6,7 +6,7 @@ import sys
 import time
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from cities_game.bot import Bot
 from cities_game.city import City
@@ -24,11 +24,11 @@ def setup_logging(group: str, log_file: str, needs_logging=True) -> logging.Logg
     with open(LOG_CONFIGURATION_FILE, "r") as f:
         configuration = json.load(f)
     configuration["handlers"]["file"]["filename"] = log_file
-    configuration["loggers"] = {}
     configuration["loggers"][group] = {
         "level": "DEBUG",
         "handlers": [
-            "file"
+            "file",
+            "stderr"
         ]
     }
     logging.config.dictConfig(configuration)
@@ -102,7 +102,7 @@ class Engine:
     def do_turn(self) -> None:
         player_game = self.create_game_player()
         try:
-            with timeout(TIME_LIMIT + 10000):
+            with timeout(TIME_LIMIT):
                 t_start = time.perf_counter()
                 self.player_bot.do_turn(player_game)
             t_end = time.perf_counter()
@@ -112,6 +112,7 @@ class Engine:
             self.player_actions = [self.convert_action(action) for action in player_actions if action is not None]
         except Exception as e:
             self.winner = "enemy"
+            self.player_logger.exception("An error occurred")
             return
 
         enemy_game = self.create_game_enemy()
@@ -182,8 +183,14 @@ class Engine:
                       font=font)
 
     def draw(self) -> Image:
-        image = Image.new('RGB', (1000, 1000), color='white')
+        tile = Image.open(r"C:\Users\user\PycharmProjects\cities\Tiny Swords\Tiny Swords (Update 010)\Terrain\Ground\green_tile.png")
+        image = Image.new('RGB', (800, 800))
+        for x in range(0, 800, tile.width):
+            for y in range(0, 800, tile.height):
+                image.paste(tile, (x, y))
+        image = image.filter(ImageFilter.GaussianBlur(1))
         draw = ImageDraw.Draw(image)
+
         font = ImageFont.load_default()
         names_font = ImageFont.load_default(size=30)
         draw.text((300, 50), f"{self.player_name}", fill="black", font=names_font)
