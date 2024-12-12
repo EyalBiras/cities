@@ -95,10 +95,10 @@ async function loadDirectoryFiles(directory) {
     alert(error.message);
   }
 }
-
 function downloadBattle(enemyGroup, filename) {
   const fullPath = `${enemyGroup}/${filename}`;
-  downloadBattleAPI(fullPath)
+  console.log("hi")
+  downloadBattleAPI(enemyGroup, filename)
     .then(() => {
       console.log(`Successfully downloaded ${filename}`);
     })

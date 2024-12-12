@@ -5,10 +5,11 @@ const getAuthToken = () => {
   return localStorage.getItem('token');
 }
 
-async function downloadBattleAPI(enemyGroup, filename) {
+async function startBattleAPI(groupName) {
   const token = getAuthToken();
   try {
-    const response = await fetch(`/download_battle/${enemyGroup}/${filename}`, {
+    const response = await fetch(`/battle/${groupName}`, {
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -16,34 +17,15 @@ async function downloadBattleAPI(enemyGroup, filename) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || 'Failed to download battle');
+      throw new Error(errorData.detail || 'Failed to start battle');
     }
 
-    const blob = await response.blob();
-
-    // Create a temporary anchor element
-    const link = document.createElement('a');
-
-    // Set the href attribute to the blob URL
-    link.href = window.URL.createObjectURL(blob);
-
-    // Set the download attribute with the filename
-    link.download = filename;
-
-    // Append the element to the body and click it
-    document.body.appendChild(link);
-    link.click();
-
-    // Remove the element and revoke the Object URL
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(link.href);
+    return response.json();
   } catch (error) {
-    console.error('Error downloading battle:', error);
+    console.error('Error starting battle:', error);
     throw error;
   }
 }
-
-
 
 async function getBattlesAPI() {
   const token = getAuthToken();
@@ -66,10 +48,10 @@ async function getBattlesAPI() {
   }
 }
 
-async function downloadBattleAPI(enemyGroup, filename) {
+async function downloadBattleAPI(enemy, filename) {
   const token = getAuthToken();
   try {
-    const response = await fetch(`/download_battle/${enemyGroup}/${filename}`, {
+    const response = await fetch(`/download_battle/${enemy}/${filename}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -87,7 +69,6 @@ async function downloadBattleAPI(enemyGroup, filename) {
     a.download = filename;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error downloading battle:', error);

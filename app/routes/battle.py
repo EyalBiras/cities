@@ -104,4 +104,4 @@ async def download_file(
     print(game_path)
     if not game_path.is_file():
         raise HTTPException(status_code=404, detail="File not found.")
-    return FileResponse(game_path, media_type="application/octet-stream", filename=Path(filename).name)
+    return FileResponse(game_path, media_type="application/octet-stream")
