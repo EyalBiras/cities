@@ -2,7 +2,6 @@ import copy
 import json
 import logging
 import logging.config
-import sys
 import time
 from pathlib import Path
 
@@ -11,13 +10,16 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from cities_game.bot import Bot
 from cities_game.city import City
 from cities_game.game import Game
+from cities_game.images import ImagesType, player_type_to_images, TERRAIN_IMAGE, CITY_SIZE, CAPITAL_SIZE, \
+    get_group_image, KNIGHT_SIZE
 from cities_game.player import Player
+from cities_game.player_type import PlayerType
 from cities_game.timeout import timeout
 
 LOG_CONFIGURATION_FILE = Path(__file__).parent / "log.json"
 GROUPS_DIRECTORY = Path(__file__).parent.parent / "groups"
 TIME_LIMIT = 2
-
+WINDOW_SIZE = (1920, 1080)
 
 def setup_logging(group: str, log_file: str, needs_logging=True) -> logging.Logger:
     logger = logging.getLogger(group)
@@ -33,6 +35,7 @@ def setup_logging(group: str, log_file: str, needs_logging=True) -> logging.Logg
     }
     logging.config.dictConfig(configuration)
     return logger
+
 
 class CityNotFoundERROR(Exception):
     pass
@@ -76,10 +79,12 @@ class Engine:
         self.is_tournament = is_tournament
 
     def create_game_player(self) -> Game:
-        return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy), copy.deepcopy(self.neutral), self.turn, self.player_logger)
+        return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy), copy.deepcopy(self.neutral), self.turn,
+                    self.player_logger)
 
     def create_game_enemy(self) -> Game:
-        return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player), copy.deepcopy(self.neutral), self.turn, self.enemy_logger)
+        return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player), copy.deepcopy(self.neutral), self.turn,
+                    self.enemy_logger)
 
     def convert_city(self, city: City) -> City:
         cities = self.player.cities + [self.player.capital_city]
@@ -102,7 +107,7 @@ class Engine:
     def do_turn(self) -> None:
         player_game = self.create_game_player()
         try:
-            with timeout(TIME_LIMIT):
+            with timeout(TIME_LIMIT + 1000):
                 t_start = time.perf_counter()
                 self.player_bot.do_turn(player_game)
             t_end = time.perf_counter()
@@ -118,7 +123,7 @@ class Engine:
         enemy_game = self.create_game_enemy()
 
         try:
-            with timeout(TIME_LIMIT):
+            with timeout(TIME_LIMIT + 1000):
                 t_start = time.perf_counter()
                 self.enemy_bot.do_turn(enemy_game)
             t_end = time.perf_counter()
@@ -150,7 +155,7 @@ class Engine:
                 self.winner = "draw"
         elif self.enemy.capital_city is None or self.enemy_time > TIME_LIMIT:
             self.winner = "player"
-        if self.turn == 300 and self.winner is None:
+        if self.turn == 100 and self.winner is None:
             if len(self.player.cities) > len(self.enemy.cities):
                 self.winner = "player"
             elif len(self.enemy.cities) > len(self.player.cities):
@@ -161,43 +166,49 @@ class Engine:
 
     @staticmethod
     def draw_player(player: Player,
+                    image: Image,
                     draw: ImageDraw,
                     font: ImageFont,
-                    city_color,
-                    capital_color,
+                    kind: PlayerType,
                     group_color) -> None:
+
         for city in player.cities:
-            draw.rectangle([city.position[0], city.position[1], city.position[0] + 50, city.position[1] + 50],
-                           outline=city_color, width=5)
-            draw.text((city.position[0] + 20, city.position[1] + 20), f"{city.people_amount}", fill="black", font=font)
+            city_image = player_type_to_images[kind][ImagesType.CITY]
+            image.paste(city_image, (int(city.position[0]) - CITY_SIZE[0] // 2, int(city.position[1]) - CITY_SIZE[1] // 2),
+                        city_image.getchannel('A'))
+            draw.text((city.position[0], city.position[1] - CITY_SIZE[1]//2), f"{city.people_amount}", fill=group_color,
+                      font=font)
         for group in player.groups:
-            draw.rectangle([group.position[0], group.position[1], group.position[0] + 10, group.position[1] + 10],
-                           outline=group_color, width=5)
-            draw.text((group.position[0], group.position[1]), f"{group.people_amount}", fill="cyan", font=font)
+            group_image = get_group_image(kind, group.people_amount)[group.animation_phase]
+            image.paste(group_image, (int(group.position[0]), int(group.position[1])),
+                        group_image.getchannel('A'))
+            draw.text((group.position[0] + group_image.size[0] // 2, group.position[1] - KNIGHT_SIZE[1] // 2), f"{group.people_amount}", fill=group_color,
+                      font=font)
         capital = player.capital_city
         if capital:
-            draw.rectangle(
-                [capital.position[0], capital.position[1], capital.position[0] + 50, capital.position[1] + 50],
-                outline=capital_color, width=10)
-            draw.text((capital.position[0] + 20, capital.position[1] + 20), f"{capital.people_amount}", fill="black",
+            capital_city_image = player_type_to_images[kind][ImagesType.CAPITAL]
+            image.paste(capital_city_image, (int(capital.position[0]) - CAPITAL_SIZE[0] // 2, int(capital.position[1]) - CAPITAL_SIZE[1] // 2),
+                        capital_city_image.getchannel('A'))
+            draw.text((capital.position[0], capital.position[1] - CAPITAL_SIZE[0] // 2), f"{capital.people_amount}", fill=group_color,
                       font=font)
 
     def draw(self) -> Image:
-        tile = Image.open(r"C:\Users\user\PycharmProjects\cities\Tiny Swords\Tiny Swords (Update 010)\Terrain\Ground\green_tile.png")
-        image = Image.new('RGB', (800, 800))
-        for x in range(0, 800, tile.width):
-            for y in range(0, 800, tile.height):
-                image.paste(tile, (x, y))
+        image = Image.new('RGB', WINDOW_SIZE)
+        for x in range(0, WINDOW_SIZE[0], TERRAIN_IMAGE.width):
+            for y in range(0, WINDOW_SIZE[1], TERRAIN_IMAGE.height):
+                image.paste(TERRAIN_IMAGE, (x, y))
         image = image.filter(ImageFilter.GaussianBlur(1))
         draw = ImageDraw.Draw(image)
 
-        font = ImageFont.load_default()
+        font = ImageFont.load_default(size=20)
         names_font = ImageFont.load_default(size=30)
-        draw.text((300, 50), f"{self.player_name}", fill="black", font=names_font)
-        draw.text((300, 400), f"{self.enemy_name}", fill="black", font=names_font)
-        self.draw_player(self.player, draw, font, "blue", "yellow", "cyan")
-        self.draw_player(self.enemy, draw, font, "red", "black", "pink")
-        self.draw_player(self.neutral, draw, font, "gray", "gray", "gray")
+        draw.text((0, 0), f"{self.player_name}", fill="black", font=names_font)
+        text_box = names_font.getbbox(self.enemy_name)
+        text_width = text_box[2] - text_box[0]
+        draw.text((WINDOW_SIZE[0] - text_width, 0), f"{self.enemy_name}", fill="black", font=names_font)
+        self.draw_player(self.player, image, draw, font, PlayerType.PLAYER, "blue")
+        self.draw_player(self.enemy, image, draw, font, PlayerType.ENEMY, "red")
+        self.draw_player(self.neutral, image, draw, font, PlayerType.NEUTRAL, "black")
         self.update()
         if self.winner is not None:
             font = ImageFont.load_default(100)

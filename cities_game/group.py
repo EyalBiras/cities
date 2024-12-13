@@ -10,8 +10,9 @@ class Group:
         self.destination = destination
         self.turns_till_arrival = self.source.get_turns_till_arrival(destination)
         self.__position = position.astype(float)
-        self.speed = 20
+        self.speed = 40
         self.__direction = (self.destination.position - self.source.position) / self.source.get_distance_to(destination)
+        self.animation_phase = 0
 
     @property
     def position(self) -> np.ndarray[float]:
@@ -20,3 +21,5 @@ class Group:
     def update(self) -> None:
         self.turns_till_arrival -= 1
         self.__position += self.__direction * self.speed
+        self.animation_phase += 1
+        self.animation_phase %= 6

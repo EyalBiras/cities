@@ -39,8 +39,6 @@ async def battle_group(
 async def battle_group(
         current_user: Annotated[User, Depends(get_current_active_user)],
         group_name: str):
-    with open("log.txt", "a") as f:
-        f.write(str(battles_requests))
     if group_name not in [group.name for group in groups_db]:
         raise HTTPException(status_code=400,
                             detail="Please enter a valid group!")
