@@ -38,7 +38,7 @@ class City:
         return float(np.linalg.norm(destination.position - self.position))
 
     def get_turns_till_arrival(self, destination: City) -> int:
-        return np.ceil(self.get_distance_to(destination) / 20)
+        return np.ceil(self.get_distance_to(destination) / 40)
 
     def can_send_group(self, people_amount: int) -> bool:
         return people_amount < self.__people_amount

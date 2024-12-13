@@ -8,15 +8,16 @@ from cities_game.capital_city import Capital
 from cities_game.city import City
 from cities_game.player import Player
 
+WINDOW_SIZE = (1920, 1080)
 
 def reset_game():
-    p1_capital = Capital(5, 1, np.array((0, 100)))
-    p2_capital = Capital(5, 1, np.array((0, 300)))
+    p1_capital = Capital(5, 1, np.array((150, WINDOW_SIZE[1] // 2)))
+    p2_capital = Capital(5, 1, np.array((WINDOW_SIZE[0] - 150, WINDOW_SIZE[1] // 2)))
     p1_groups = []
     p2_groups = []
-    neutral_cities = [City(5, 0, np.array((100, 100))), City(5, 0, np.array((200, 100))),
-                      City(5, 0, np.array((300, 100))), City(5, 0, np.array((100, 300))),
-                      City(5, 0, np.array((200, 300))), City(5, 0, np.array((300, 300)))]
+    neutral_cities = [City(5, 0, np.array((WINDOW_SIZE[0] // 4, WINDOW_SIZE[1] // 4))), City(5, 0, np.array((WINDOW_SIZE[0] // 4,  3 * WINDOW_SIZE[1] // 4))),
+                      City(5, 0, np.array((3 * WINDOW_SIZE[0] // 4, WINDOW_SIZE[1] // 4))), City(5, 0, np.array((3 * WINDOW_SIZE[0] // 4 , 3 * WINDOW_SIZE[1] // 4))),
+                      City(5, 0, np.array((WINDOW_SIZE[0] // 2, WINDOW_SIZE[0] // 2)))]
     p1 = Player([], p1_capital, p1_groups)
     p2 = Player([], p2_capital, p2_groups)
     neutral_player = Player(neutral_cities, None, [])
