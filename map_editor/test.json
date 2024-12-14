@@ -1,0 +1,83 @@
+{
+  "decorations": [
+    [
+      "C:\\Users\\user\\PycharmProjects\\cities\\Tiny Swords\\Tiny Swords (Update 010)\\Deco\\01.png",
+      [
+        545,
+        423
+      ]
+    ],
+    [
+      "C:\\Users\\user\\PycharmProjects\\cities\\Tiny Swords\\Tiny Swords (Update 010)\\Deco\\02.png",
+      [
+        304,
+        705
+      ]
+    ],
+    [
+      "C:\\Users\\user\\PycharmProjects\\cities\\Tiny Swords\\Tiny Swords (Update 010)\\Deco\\06.png",
+      [
+        292,
+        131
+      ]
+    ],
+    [
+      "C:\\Users\\user\\PycharmProjects\\cities\\Tiny Swords\\Tiny Swords (Update 010)\\Deco\\16.png",
+      [
+        1588,
+        55
+      ]
+    ],
+    [
+      "C:\\Users\\user\\PycharmProjects\\cities\\Tiny Swords\\Tiny Swords (Update 010)\\Deco\\13.png",
+      [
+        1162,
+        458
+      ]
+    ]
+  ],
+  "buildings": [
+    [
+      "Capital",
+      [
+        148,
+        435
+      ]
+    ],
+    [
+      "Capital",
+      [
+        1772,
+        435
+      ]
+    ],
+    [
+      "City",
+      [
+        642,
+        129
+      ]
+    ],
+    [
+      "City",
+      [
+        1278,
+        129
+      ]
+    ],
+    [
+      "City",
+      [
+        650,
+        745
+      ]
+    ],
+    [
+      "City",
+      [
+        1270,
+        745
+      ]
+    ]
+  ]
+}
