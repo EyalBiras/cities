@@ -1,5 +1,6 @@
+import json
 from pathlib import Path
-
+from map_editor.tile import Tile
 import cv2
 import numpy as np
 from PIL import Image
@@ -9,19 +10,44 @@ from cities_game.city import City
 from cities_game.player import Player
 
 WINDOW_SIZE = (1920, 1080)
-
+FILE = Path(__file__)
+MAP_FILE = FILE.parent / "map_editor" / "test.json"
 def reset_game():
-    p1_capital = Capital(5, 1, np.array((150, WINDOW_SIZE[1] // 2)))
-    p2_capital = Capital(5, 1, np.array((WINDOW_SIZE[0] - 150, WINDOW_SIZE[1] // 2)))
-    p1_groups = []
-    p2_groups = []
-    neutral_cities = [City(5, 0, np.array((WINDOW_SIZE[0] // 4, WINDOW_SIZE[1] // 4))), City(5, 0, np.array((WINDOW_SIZE[0] // 4,  3 * WINDOW_SIZE[1] // 4))),
-                      City(5, 0, np.array((3 * WINDOW_SIZE[0] // 4, WINDOW_SIZE[1] // 4))), City(5, 0, np.array((3 * WINDOW_SIZE[0] // 4 , 3 * WINDOW_SIZE[1] // 4))),
-                      City(5, 0, np.array((WINDOW_SIZE[0] // 2, WINDOW_SIZE[0] // 2)))]
-    p1 = Player([], p1_capital, p1_groups)
-    p2 = Player([], p2_capital, p2_groups)
+    with open(MAP_FILE) as f:
+        game_map = json.load(f)
+
+    neutral_cities = []
+    for building_type, position in game_map["buildings"]:
+        if building_type == Tile.CITY:
+            neutral_cities.append(City(5, 0, np.array(position)))
+        elif building_type == Tile.CAPITAL:
+            if position[0] < WINDOW_SIZE[0] // 2:
+                p1_capital = Capital(5, 1, np.array((position)))
+            else:
+                p2_capital = Capital(5, 1, np.array((position)))
+
+    decorations = []
+    for decoration, position in game_map["decorations"]:
+        decorations.append((Image.open(decoration), position))
+    p1 = Player([], p1_capital, [])
+    p2 = Player([], p2_capital, [])
     neutral_player = Player(neutral_cities, None, [])
-    return p1, p2, neutral_player
+    print(p2_capital.position)
+    return p1, p2, neutral_player, decorations
+
+
+# def reset_game():
+#     p1_capital = Capital(5, 1, np.array((150, WINDOW_SIZE[1] // 2)))
+#     p2_capital = Capital(5, 1, np.array((WINDOW_SIZE[0] - 150, WINDOW_SIZE[1] // 2)))
+#     p1_groups = []
+#     p2_groups = []
+#     neutral_cities = [City(5, 0, np.array((WINDOW_SIZE[0] // 4, WINDOW_SIZE[1] // 4))), City(5, 0, np.array((WINDOW_SIZE[0] // 4,  3 * WINDOW_SIZE[1] // 4))),
+#                       City(5, 0, np.array((3 * WINDOW_SIZE[0] // 4, WINDOW_SIZE[1] // 4))), City(5, 0, np.array((3 * WINDOW_SIZE[0] // 4 , 3 * WINDOW_SIZE[1] // 4))),
+#                       City(5, 0, np.array((WINDOW_SIZE[0] // 2, WINDOW_SIZE[0] // 2)))]
+#     p1 = Player([], p1_capital, p1_groups)
+#     p2 = Player([], p2_capital, p2_groups)
+#     neutral_player = Player(neutral_cities, None, [])
+#     return p1, p2, neutral_player
 
 
 def images_to_video(image_objects: list[Image], output_video_path, fps=1, size=None) -> None:

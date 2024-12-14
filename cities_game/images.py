@@ -1,3 +1,4 @@
+import time
 from enum import StrEnum
 from pathlib import Path
 
@@ -21,6 +22,7 @@ def format_image(image_file: Path, size: tuple[int, int] | None = None, reflect:
     image.convert('RGBA')
     return image
 
+
 def concat_horizontally(image: Image, count: int) -> Image:
     width, height = image.size
     new_width = width * count
@@ -30,6 +32,7 @@ def concat_horizontally(image: Image, count: int) -> Image:
         new_image.paste(image, (i * width, 0))
     return new_image
 
+
 def concat_vertically(image: Image, count: int) -> Image:
     width, height = image.size
     new_width = width
@@ -38,6 +41,7 @@ def concat_vertically(image: Image, count: int) -> Image:
     for i in range(count):
         new_image.paste(image, (0, i * height))
     return new_image
+
 
 def make_group(image: Image, count: int) -> Image:
     if count == 1:
@@ -68,14 +72,21 @@ def make_group(image: Image, count: int) -> Image:
         return concat_vertically(concat_horizontally(image, 3), 2)
 
 
-def get_knight(image_file: Path, size: tuple[int, int] | None = None, reflect: bool = False, count: int = 1) -> list[Image]:
+def get_knight(image_file: Path, size: tuple[int, int] | None = None, reflect: bool = False, count: int = 1) -> list[
+    Image]:
     animation = []
     for warrior_image in image_file.glob("*"):
         if "Warrior_walk_animation" in warrior_image.name:
             animation.append(make_group(format_image(warrior_image, size, reflect), count=count))
     return animation
 
+def load_images(image_directory: Path) -> list[Image]:
+    return [format_image(image_file) for image_file in image_directory.glob("*")]
+
 IMAGES_BASE_FILE = Path(__file__).parent.parent / "Tiny Swords" / "Tiny Swords (Update 010)"
+DECORATIONS_DIRECTORY = IMAGES_BASE_FILE / "Deco"
+RESOURCES_DIRECTORY = IMAGES_BASE_FILE / "Resources"
+
 TERRAIN_FILE = IMAGES_BASE_FILE / "Terrain" / "Ground" / "green_tile.png"
 ASSETS_BASE_FILE = IMAGES_BASE_FILE / "Factions" / "Knights"
 
@@ -88,6 +99,8 @@ ENEMY_CAPITAL_FILE = ASSETS_BASE_FILE / "Buildings" / "Castle" / "Castle_Red.png
 ENEMY_KNIGHT_FILE = ASSETS_BASE_FILE / "Troops" / "Warrior" / "Red"
 
 NEUTRAL_CITY_FILE = ASSETS_BASE_FILE / "Buildings" / "Tower" / "Tower_yellow.png"
+NEUTRAL_CAPITAL_FILE = ASSETS_BASE_FILE / "Buildings" / "Castle" / "Castle_yellow.png"
+
 
 KNIGHT_SIZE = (int(get_knight(PLAYER_KNIGHT_FILE)[0].size[0] // 2), int(get_knight(PLAYER_KNIGHT_FILE)[1].size[1] // 2))
 
@@ -106,12 +119,20 @@ player_type_to_images = {
         },
     PlayerType.NEUTRAL:
         {
-            ImagesType.CITY: format_image(NEUTRAL_CITY_FILE)
+            ImagesType.CITY: format_image(NEUTRAL_CITY_FILE),
+            ImagesType.CAPITAL: format_image(NEUTRAL_CAPITAL_FILE)
         }
 }
 TERRAIN_IMAGE = Image.open(TERRAIN_FILE)
 CITY_SIZE = player_type_to_images[PlayerType.PLAYER][ImagesType.CITY].size
 CAPITAL_SIZE = player_type_to_images[PlayerType.PLAYER][ImagesType.CAPITAL].size
+
+decorations = {
+    "decorations": load_images(DECORATIONS_DIRECTORY),
+    "trees": 2,
+    "sheep": 3,
+}
+
 
 def get_group_image(kind: PlayerType, people_amount: int) -> Image:
     people_amount -= 1

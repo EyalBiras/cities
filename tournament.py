@@ -116,15 +116,15 @@ def battle(group: Path, enemy: Path, games_directory: Path) -> None:
         f.write(f"\n")
         f.write(f"\n")
         f.write(f"if __name__ == '__main__':\n")
-        f.write(f"\tp1, p2, neutral_player = reset_game()\n")
+        f.write(f"\tp1, p2, neutral_player, decorations = reset_game()\n")
         f.write(
-            f"\te = Engine(p1,{group.name}.MyBot(),'{group.name}', p2,{enemy.name}.MyBot(), '{enemy.name}', neutral_player, is_tournament=False)\n")
+            f"\te = Engine(p1,{group.name}.MyBot(),'{group.name}', p2,{enemy.name}.MyBot(), '{enemy.name}', neutral_player, decorations,    is_tournament=False)\n")
         f.write(f"\tgame, winner = e.play()\n")
         f.write(f"\n")
         f.write(f"\tgame_file = r'{games_directory}\\{enemy.name}\\{group.name} vs {enemy.name}-winner-' + winner + '.mp4'\n")
         f.write(f"\timages_to_video(game, game_file)")
     subprocess.run([sys.executable, game_path])
-    # game_path.unlink()
+    game_path.unlink()
 
 
 def run_game(group1: Path, group2: Path, games_directory: str = GAMES_BASE_PATH / "games",
@@ -142,9 +142,9 @@ def run_game(group1: Path, group2: Path, games_directory: str = GAMES_BASE_PATH 
         f.write(f"RESULTS_FILE = Path(r'{RESULTS_FILE}')\n")
         f.write(f"\n")
         f.write(f"if __name__ == '__main__':\n")
-        f.write(f"\tp1, p2, neutral_player = reset_game()\n")
+        f.write(f"\tp1, p2, neutral_player, decorations = reset_game()\n")
         f.write(
-            f"\te = Engine(p1,{group1.name}.MyBot(),'{group1.name}', p2,{group2.name}.MyBot(), '{group2.name}', neutral_player)\n")
+            f"\te = Engine(p1,{group1.name}.MyBot(),'{group1.name}', p2,{group2.name}.MyBot(), '{group2.name}', neutral_player, decorations)\n")
         f.write(f"\tgame, winner = e.play()\n")
         f.write(f"\twith open(RESULTS_FILE) as f:\n")
         f.write(f"\t\tresults = json.load(f)\n")
@@ -165,7 +165,7 @@ def run_game(group1: Path, group2: Path, games_directory: str = GAMES_BASE_PATH 
         f.write(f"\tgame_file = r'{games_directory}\\{group1.name} vs {group2.name}-winner-' + winner + '.mp4v'\n")
         f.write(f"\timages_to_video(game, game_file)")
     subprocess.run([sys.executable, game_path])
-    game_path.unlink()
+    # game_path.unlink()
 
 
 def move_development_to_tournament(group: str) -> None:
@@ -194,3 +194,5 @@ def run_tournament():
 
     print(list(GROUPS.glob("*")))
     print(time.perf_counter() - t1)
+
+run_tournament()

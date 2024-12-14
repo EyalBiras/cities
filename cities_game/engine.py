@@ -25,14 +25,17 @@ def setup_logging(group: str, log_file: str, needs_logging=True) -> logging.Logg
     logger = logging.getLogger(group)
     with open(LOG_CONFIGURATION_FILE, "r") as f:
         configuration = json.load(f)
-    configuration["handlers"]["file"]["filename"] = log_file
-    configuration["loggers"][group] = {
-        "level": "DEBUG",
-        "handlers": [
-            "file",
-            "stderr"
-        ]
-    }
+    if not needs_logging:
+        logger.addHandler(logging.NullHandler())
+    else:
+        configuration["handlers"]["file"]["filename"] = log_file
+        configuration["loggers"][group] = {
+            "level": "DEBUG",
+            "handlers": [
+                "file",
+                "stderr"
+            ]
+        }
     logging.config.dictConfig(configuration)
     return logger
 
@@ -50,17 +53,19 @@ class Engine:
                  enemy_bot: Bot,
                  enemy_name: str,
                  neutral: Player,
-                 is_tournament: bool = True) -> None:
+                 decorations: list[Image, tuple[int, int]],
+                 is_tournament: bool = True
+                 ) -> None:
         self.player = player
         self.player_bot = player_bot
         self.player_name = player_name
         self.player_actions = []
         self.player_time = 0
         self.player_log_file = GROUPS_DIRECTORY / player_name / "battles" / enemy_name / "battle.log"
-        self.player_log_file.parent.mkdir(exist_ok=True)
+        self.player_log_file.parent.mkdir(parents=True, exist_ok=True)
         with open(self.player_log_file, "w") as f:
             pass
-        self.player_logger = setup_logging(player_name, str(self.player_log_file))
+        self.player_logger = setup_logging(player_name, str(self.player_log_file), not is_tournament)
 
         self.enemy = enemy
         self.enemy_bot = enemy_bot
@@ -68,14 +73,15 @@ class Engine:
         self.enemy_actions = []
         self.enemy_time = 0
         self.enemy_log_file = GROUPS_DIRECTORY / enemy_name / "battles" / player_name / "battle.log"
-        self.enemy_log_file.parent.mkdir(exist_ok=True)
+        self.enemy_log_file.parent.mkdir(parents=True, exist_ok=True)
         with open(self.enemy_log_file, "w") as f:
             pass
-        self.enemy_logger = setup_logging(enemy_name, str(self.enemy_log_file))
+        self.enemy_logger = setup_logging(enemy_name, str(self.enemy_log_file), False)
 
         self.neutral = neutral
         self.winner = None
         self.turn = 1
+        self.decorations = decorations
         self.is_tournament = is_tournament
 
     def create_game_player(self) -> Game:
@@ -192,6 +198,10 @@ class Engine:
             draw.text((capital.position[0], capital.position[1] - CAPITAL_SIZE[0] // 2), f"{capital.people_amount}", fill=group_color,
                       font=font)
 
+    def draw_decoration(self, image: Image):
+        for decoration, position in self.decorations:
+            image.paste(decoration, position, decoration.getchannel('A'))
+
     def draw(self) -> Image:
         image = Image.new('RGB', WINDOW_SIZE)
         for x in range(0, WINDOW_SIZE[0], TERRAIN_IMAGE.width):
@@ -209,6 +219,7 @@ class Engine:
         self.draw_player(self.player, image, draw, font, PlayerType.PLAYER, "blue")
         self.draw_player(self.enemy, image, draw, font, PlayerType.ENEMY, "red")
         self.draw_player(self.neutral, image, draw, font, PlayerType.NEUTRAL, "black")
+        self.draw_decoration(image)
         self.update()
         if self.winner is not None:
             font = ImageFont.load_default(100)
@@ -229,7 +240,4 @@ class Engine:
             images.append(self.draw())
 
         logging.shutdown()
-        if self.is_tournament:
-            self.player_log_file.unlink(missing_ok=True)
-        self.enemy_log_file.unlink(missing_ok=True)
         return images, self.winner
