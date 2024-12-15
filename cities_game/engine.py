@@ -1,4 +1,5 @@
 import copy
+import gzip
 import json
 import logging
 import logging.config
@@ -20,6 +21,7 @@ LOG_CONFIGURATION_FILE = Path(__file__).parent / "log.json"
 GROUPS_DIRECTORY = Path(__file__).parent.parent / "groups"
 TIME_LIMIT = 2
 WINDOW_SIZE = (1920, 1080)
+
 
 def setup_logging(group: str, log_file: str, needs_logging=True) -> logging.Logger:
     logger = logging.getLogger(group)
@@ -83,6 +85,9 @@ class Engine:
         self.turn = 1
         self.decorations = decorations
         self.is_tournament = is_tournament
+        self.game = [{"player": self.player.get_state(),
+                      "enemy": self.enemy.get_state(),
+                      "neutral": self.neutral.get_state()}]
 
     def create_game_player(self) -> Game:
         return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy), copy.deepcopy(self.neutral), self.turn,
@@ -155,13 +160,32 @@ class Engine:
         self.player.update_conquered_cities()
         self.enemy.update_conquered_cities()
 
+        player_state = {
+            "cities": self.player.cities,
+            "capital": self.player.capital_city,
+            "groups": self.player.groups
+        }
+        enemy_state = {
+            "cities": self.enemy.cities,
+            "capital": self.enemy.capital_city,
+            "groups": self.enemy.groups
+        }
+        neutral_state = {
+            "cities": self.neutral.cities
+        }
+        self.game.append({
+            "player": self.player.get_state(),
+            "enemy": self.enemy.get_state(),
+            "neutral": self.neutral.get_state()
+        })
+
         if self.player.capital_city is None or self.player_time > TIME_LIMIT:
             self.winner = "enemy"
             if self.enemy.capital_city is None or self.enemy_time > TIME_LIMIT:
                 self.winner = "draw"
         elif self.enemy.capital_city is None or self.enemy_time > TIME_LIMIT:
             self.winner = "player"
-        if self.turn == 100 and self.winner is None:
+        if self.turn == 300 and self.winner is None:
             if len(self.player.cities) > len(self.enemy.cities):
                 self.winner = "player"
             elif len(self.enemy.cities) > len(self.player.cities):
@@ -180,22 +204,27 @@ class Engine:
 
         for city in player.cities:
             city_image = player_type_to_images[kind][ImagesType.CITY]
-            image.paste(city_image, (int(city.position[0]) - CITY_SIZE[0] // 2, int(city.position[1]) - CITY_SIZE[1] // 2),
+            image.paste(city_image,
+                        (int(city.position[0]) - CITY_SIZE[0] // 2, int(city.position[1]) - CITY_SIZE[1] // 2),
                         city_image.getchannel('A'))
-            draw.text((city.position[0], city.position[1] - CITY_SIZE[1]//2), f"{city.people_amount}", fill=group_color,
+            draw.text((city.position[0], city.position[1] - CITY_SIZE[1] // 2), f"{city.people_amount}",
+                      fill=group_color,
                       font=font)
         for group in player.groups:
             group_image = get_group_image(kind, group.people_amount)[group.animation_phase]
             image.paste(group_image, (int(group.position[0]), int(group.position[1])),
                         group_image.getchannel('A'))
-            draw.text((group.position[0] + group_image.size[0] // 2, group.position[1] - KNIGHT_SIZE[1] // 2), f"{group.people_amount}", fill=group_color,
+            draw.text((group.position[0] + group_image.size[0] // 2, group.position[1] - KNIGHT_SIZE[1] // 2),
+                      f"{group.people_amount}", fill=group_color,
                       font=font)
         capital = player.capital_city
         if capital:
             capital_city_image = player_type_to_images[kind][ImagesType.CAPITAL]
-            image.paste(capital_city_image, (int(capital.position[0]) - CAPITAL_SIZE[0] // 2, int(capital.position[1]) - CAPITAL_SIZE[1] // 2),
+            image.paste(capital_city_image, (
+                int(capital.position[0]) - CAPITAL_SIZE[0] // 2, int(capital.position[1]) - CAPITAL_SIZE[1] // 2),
                         capital_city_image.getchannel('A'))
-            draw.text((capital.position[0], capital.position[1] - CAPITAL_SIZE[0] // 2), f"{capital.people_amount}", fill=group_color,
+            draw.text((capital.position[0], capital.position[1] - CAPITAL_SIZE[0] // 2), f"{capital.people_amount}",
+                      fill=group_color,
                       font=font)
 
     def draw_decoration(self, image: Image):
@@ -238,6 +267,7 @@ class Engine:
         images = []
         while self.winner is None:
             images.append(self.draw())
-
+        with gzip.open('data.json.gz', 'wt', encoding='utf-8') as file:
+            json.dump(self.game, file)
         logging.shutdown()
         return images, self.winner
