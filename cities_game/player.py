@@ -70,3 +70,16 @@ class Player:
             city.people_amount *= -1
             self.cities.append(city)
         self.conquered_cities = []
+
+    def get_state(self):
+        if self.capital_city:
+            state = {
+                "cities": [(city.people_amount, city.level, (int(city.position[0]), int(city.position[1]))) for city in self.cities],
+                "capital": [(self.capital_city.people_amount, self.capital_city.level, ((int(self.capital_city.position[0])), int(self.capital_city.position[1])))],
+                "groups": [(group.people_amount, (int(group.position[0]), int(group.position[1]))) for group in self.groups],
+            }
+        else:
+            state = {
+                "cities": [(city.people_amount, city.level, (int(city.position[0]), int(city.position[1]))) for city in self.cities]
+            }
+        return state

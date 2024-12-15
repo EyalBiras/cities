@@ -5,7 +5,7 @@ from pathlib import Path
 import pygame
 
 from cities_game.images import DECORATIONS_DIRECTORY, NEUTRAL_CAPITAL_FILE, NEUTRAL_CITY_FILE
-from tile import Tile
+from map_editor.tile import Tile
 
 WINDOW_SIZE = (1920, 1080)
 
@@ -159,5 +159,3 @@ class Editor:
             self.clock.tick(60)
 
 
-e = Editor()
-e.run()
