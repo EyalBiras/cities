@@ -9,11 +9,15 @@ from .auth import get_current_active_user
 
 
 def verify_group_name(group_name: str) -> bool:
+    if len(group_name) == 0:
+        return False
     if group_name[0].isdigit():
         return False
+
     for letter in group_name:
-        if not (letter.isdigit() or letter.isalpha()):
+        if not (letter.isalpha() or letter.isdigit() or letter == '_'):
             return False
+
     return True
 
 

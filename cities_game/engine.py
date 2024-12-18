@@ -1,9 +1,10 @@
-import copy
-import gzip
+import json
 import json
 import logging
 import logging.config
 import time
+import uuid
+from functools import lru_cache
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -16,6 +17,8 @@ from cities_game.images import ImagesType, player_type_to_images, TERRAIN_IMAGE,
 from cities_game.player import Player
 from cities_game.player_type import PlayerType
 from cities_game.timeout import timeout
+from cities_game.turn_filter import TurnFilter
+from cities_game.update_flag import internal_update_flag
 
 LOG_CONFIGURATION_FILE = Path(__file__).parent / "log.json"
 GROUPS_DIRECTORY = Path(__file__).parent.parent / "groups"
@@ -31,6 +34,7 @@ def setup_logging(group: str, log_file: str, needs_logging=True) -> logging.Logg
         logger.addHandler(logging.NullHandler())
     else:
         configuration["handlers"]["file"]["filename"] = log_file
+        print(configuration)
         configuration["loggers"][group] = {
             "level": "DEBUG",
             "handlers": [
@@ -38,6 +42,7 @@ def setup_logging(group: str, log_file: str, needs_logging=True) -> logging.Logg
                 "stderr"
             ]
         }
+        logger.addFilter(TurnFilter(-1))
     logging.config.dictConfig(configuration)
     return logger
 
@@ -56,19 +61,23 @@ class Engine:
                  enemy_name: str,
                  neutral: Player,
                  decorations: list[Image, tuple[int, int]],
-                 is_tournament: bool = True
+                 game_name: str = "",
+                 is_tournament: bool = True,
                  ) -> None:
         self.player = player
         self.player_bot = player_bot
         self.player_name = player_name
         self.player_actions = []
         self.player_time = 0
-        self.player_log_file = GROUPS_DIRECTORY / player_name / "battles" / enemy_name / "battle.log"
+        if game_name == "":
+            self.player_log_file = GROUPS_DIRECTORY / player_name / "battles" / enemy_name / "battle.log"
+        else:
+            self.player_log_file = GROUPS_DIRECTORY / player_name / "battles" / enemy_name / (game_name + ".log")
         self.player_log_file.parent.mkdir(parents=True, exist_ok=True)
         with open(self.player_log_file, "w") as f:
             pass
         self.player_logger = setup_logging(player_name, str(self.player_log_file), not is_tournament)
-
+        self.s = set()
         self.enemy = enemy
         self.enemy_bot = enemy_bot
         self.enemy_name = enemy_name
@@ -85,69 +94,93 @@ class Engine:
         self.turn = 1
         self.decorations = decorations
         self.is_tournament = is_tournament
+        self.id = uuid.uuid4()
+        self.player_logger.debug(str(self.id))
         self.game = [{"player": self.player.get_state(),
                       "enemy": self.enemy.get_state(),
                       "neutral": self.neutral.get_state()}]
 
     def create_game_player(self) -> Game:
-        return Game(copy.deepcopy(self.player), copy.deepcopy(self.enemy), copy.deepcopy(self.neutral), self.turn,
+        return Game(self.player, self.enemy, self.neutral, self.turn,
                     self.player_logger)
 
     def create_game_enemy(self) -> Game:
-        return Game(copy.deepcopy(self.enemy), copy.deepcopy(self.player), copy.deepcopy(self.neutral), self.turn,
+        return Game(self.enemy, self.player, self.neutral, self.turn,
                     self.enemy_logger)
 
-    def convert_city(self, city: City) -> City:
+    @lru_cache(maxsize=64)
+    def check_city(self, city: City) -> bool:
         cities = self.player.cities + [self.player.capital_city]
         if city in cities:
-            return cities[cities.index(city)]
+            return True
         cities = self.enemy.cities + [self.enemy.capital_city]
         if city in cities:
-            return cities[cities.index(city)]
+            return True
         cities = self.neutral.cities
         if city in cities:
-            return cities[cities.index(city)]
+            return True
         raise CityNotFoundERROR()
 
-    def convert_action(self, action) -> list[str]:
-        action[0] = self.convert_city(action[0])
+    def check_action(self, action) -> bool:
+        self.check_city(action[0])
         if action[1] == "send":
-            action[2] = self.convert_city(action[2])
-        return action
+            self.check_city(action[2])
+        return True
 
     def do_turn(self) -> None:
         player_game = self.create_game_player()
         try:
-            with timeout(TIME_LIMIT + 1000):
+            with timeout(TIME_LIMIT + 1200000):
                 t_start = time.perf_counter()
                 self.player_bot.do_turn(player_game)
             t_end = time.perf_counter()
             self.player_time += t_end - t_start
             player_actions = [city.action for city in player_game.player.cities]
             player_actions.append(player_game.player.capital_city.action)
-            self.player_actions = [self.convert_action(action) for action in player_actions if action is not None]
+            for action in player_actions:
+                if action is not None:
+                    self.check_action(action)
+            self.player_actions = player_actions
         except Exception as e:
             self.winner = "enemy"
             self.player_logger.exception("An error occurred")
+            return
+        except BaseException as e:
+            self.winner = "enemy"
+            self.player_logger.exception("An error occurred")
+            return
+        except TimeoutError as e:
+            self.winner = "enemy"
             return
 
         enemy_game = self.create_game_enemy()
 
         try:
-            with timeout(TIME_LIMIT + 1000):
+            with timeout(TIME_LIMIT):
                 t_start = time.perf_counter()
                 self.enemy_bot.do_turn(enemy_game)
             t_end = time.perf_counter()
             self.enemy_time += t_end - t_start
             enemy_actions = [city.action for city in enemy_game.player.cities]
             enemy_actions.append(enemy_game.player.capital_city.action)
-            self.enemy_actions = [self.convert_action(action) for action in enemy_actions if action is not None]
+            for action in player_actions:
+                if action is not None:
+                    self.check_action(action)
+            self.player_actions = player_actions
         except Exception as e:
+            self.winner = "player"
+            return
+        except BaseException as e:
+            self.winner = "player"
+            return
+        except OSError as e:
             self.winner = "player"
             return
 
     def update(self) -> None:
         self.do_turn()
+
+        internal_update_flag.allow()
 
         self.player.update_groups()
         self.enemy.update_groups()
@@ -160,19 +193,8 @@ class Engine:
         self.player.update_conquered_cities()
         self.enemy.update_conquered_cities()
 
-        player_state = {
-            "cities": self.player.cities,
-            "capital": self.player.capital_city,
-            "groups": self.player.groups
-        }
-        enemy_state = {
-            "cities": self.enemy.cities,
-            "capital": self.enemy.capital_city,
-            "groups": self.enemy.groups
-        }
-        neutral_state = {
-            "cities": self.neutral.cities
-        }
+        internal_update_flag.disallow()
+
         self.game.append({
             "player": self.player.get_state(),
             "enemy": self.enemy.get_state(),
@@ -231,7 +253,7 @@ class Engine:
         for decoration, position in self.decorations:
             image.paste(decoration, position, decoration.getchannel('A'))
 
-    def draw(self) -> Image:
+    def draw_turn(self) -> Image:
         image = Image.new('RGB', WINDOW_SIZE)
         for x in range(0, WINDOW_SIZE[0], TERRAIN_IMAGE.width):
             for y in range(0, WINDOW_SIZE[1], TERRAIN_IMAGE.height):
@@ -249,7 +271,7 @@ class Engine:
         self.draw_player(self.enemy, image, draw, font, PlayerType.ENEMY, "red")
         self.draw_player(self.neutral, image, draw, font, PlayerType.NEUTRAL, "black")
         self.draw_decoration(image)
-        self.update()
+
         if self.winner is not None:
             font = ImageFont.load_default(100)
             if self.winner == "player":
@@ -263,11 +285,27 @@ class Engine:
 
         return image
 
-    def play(self) -> tuple[list[Image], str | None]:
+    def make_video(self) -> tuple[list[Image], str]:
         images = []
         while self.winner is None:
-            images.append(self.draw())
-        with gzip.open('data.json.gz', 'wt', encoding='utf-8') as file:
-            json.dump(self.game, file)
+            images.append(self.draw_turn())
+        print(self.winner)
         logging.shutdown()
         return images, self.winner
+
+    def make_game(self):
+        while self.winner is None:
+            self.update()
+
+        game = {"id": str(self.id),
+                "game": self.game,
+                "winner": self.winner}
+
+        for handler in self.player_logger.handlers:
+            handler.close()
+            self.player_logger.removeHandler(handler)
+        for handler in self.enemy_logger.handlers:
+            handler.close()
+            self.enemy_logger.removeHandler(handler)
+        logging.shutdown()
+        return game, self.winner

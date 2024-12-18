@@ -22,5 +22,11 @@
     "group": null,
     "hashed_password": "$2b$12$mfMJI1LhGg8xPN7w49kmTugzONm0O08neKC6fvIUNEoSvOmszWjSi",
     "disabled": false
+  },
+  "aa": {
+    "username": "aa",
+    "group": "GroupS",
+    "hashed_password": "$2b$12$ldPLDik/hdrLAblL4o8YCOWZOdAD8ZBqntJpxHloFMfEKlJmv45Ni",
+    "disabled": false
   }
 }

@@ -1,85 +1,92 @@
 from cities_game.capital_city import Capital
 from cities_game.city import City
 from cities_game.group import Group
+from cities_game.update_flag import internal_update_flag
 
 
 class Player:
     def __init__(self, cities: list[City], capital_city: Capital | None, groups: list[Group]) -> None:
-        self.cities = cities
-        self.capital_city = capital_city
-        self.groups = groups
-        self.conquered_cities = []
-        self.lost_cities = []
+        self.__cities = cities
+        self.__capital_city = capital_city
+        self.__groups = groups
+        self.__conquered_cities = []
+        self.__lost_cities = []
 
-    def convert_actions(self, action: list[City]) -> None:
-        cities = self.cities + [self.capital_city]
-        if action[0] not in cities:
-            return
-        action[0] = cities.index(action[0])
+    @property
+    def groups(self):
+        return self.__groups
+
+    @property
+    def capital_city(self):
+        return self.__capital_city
+
+    @property
+    def cities(self):
+        return self.__cities
 
     def update_groups(self) -> None:
-        for group in self.groups:
-            group.update()
-            if group.turns_till_arrival == 0:
-                if group.destination in self.cities or group.destination is self.capital_city:
-                    group.destination.people_amount += group.people_amount
-                else:
-                    group.destination.people_amount -= group.people_amount
-                    if group.destination.people_amount < 0:
-                        self.conquered_cities.append(group.destination)
-                self.groups.remove(group)
+        if internal_update_flag.is_allowed():
+            for group in self.__groups:
+                group.update()
+                if group.turns_till_arrival == 0:
+                    if group.destination in self.cities or group.destination is self.__capital_city:
+                        group.destination.people_amount += group.people_amount
+                    else:
+                        group.destination.people_amount -= group.people_amount
+                        if group.destination.people_amount < 0:
+                            self.__conquered_cities.append(group.destination)
+                    self.__groups.remove(group)
 
     def update_cities(self, actions) -> None:
-        for city in self.cities:
-            if city.people_amount < 0:
-                self.lost_cities.append(city)
-            else:
-                city.update()
-        for action in actions:
-            try:
-                cities = self.cities + [self.capital_city]
-                city = cities[cities.index(action[0])]
-                if action[1] == "upgrade":
-                    if city.can_upgrade():
-                        city.people_amount -= city.get_upgrade_cost()
-                        city.level += 1
-                elif action[1] == "send":
-                    try:
-                        if city.can_send_group(action[3]) and isinstance(action[2], City):
-                            city.people_amount -= action[3]
-                            self.groups.append(Group(action[3], city, action[2], city.position))
-                    except Exception:
-                        pass
+        if internal_update_flag.is_allowed():
+            for city in self.__cities:
+                if city.people_amount < 0:
+                    self.__lost_cities.append(city)
+                else:
+                    city.update()
+            for action in actions:
+                try:
+                    if action is None:
+                        continue
+                    city = action[0]
+                    if action[1] == "send":
+                        self.__groups.append(Group(action[3], city, action[2], city.position))
 
-            except ValueError:
-                pass
+                except ValueError:
+                    pass
 
-        if self.capital_city is not None:
-            if self.capital_city.people_amount < 0:
-                self.capital_city = None
-            else:
-                self.capital_city.update()
+            if self.__capital_city is not None:
+                if self.__capital_city.people_amount < 0:
+                    self.__capital_city = None
+                else:
+                    self.__capital_city.update()
 
     def update_lost_cities(self) -> None:
-        for city in self.lost_cities:
-            self.cities.remove(city)
-        self.lost_cities = []
+        if internal_update_flag.is_allowed():
+            for city in self.__lost_cities:
+                self.cities.remove(city)
+            self.__lost_cities = []
 
     def update_conquered_cities(self):
-        for city in self.conquered_cities:
-            city.people_amount *= -1
-            self.cities.append(city)
-        self.conquered_cities = []
+        if internal_update_flag.is_allowed():
+            for city in self.__conquered_cities:
+                city.people_amount *= -1
+                self.cities.append(city)
+            self.__conquered_cities = []
 
     def get_state(self):
-        if self.capital_city:
+        if self.__capital_city:
             state = {
-                "cities": [(city.people_amount, city.level, (int(city.position[0]), int(city.position[1]))) for city in self.cities],
-                "capital": [(self.capital_city.people_amount, self.capital_city.level, ((int(self.capital_city.position[0])), int(self.capital_city.position[1])))],
-                "groups": [(group.people_amount, (int(group.position[0]), int(group.position[1]))) for group in self.groups],
+                "cities": [(city.people_amount, city.level, (int(city.position[0]), int(city.position[1]))) for city in
+                           self.__cities],
+                "capital": [(self.__capital_city.people_amount, self.__capital_city.level,
+                             ((int(self.__capital_city.position[0])), int(self.__capital_city.position[1])))],
+                "groups": [(group.people_amount, (int(group.position[0]), int(group.position[1]))) for group in
+                           self.__groups],
             }
         else:
             state = {
-                "cities": [(city.people_amount, city.level, (int(city.position[0]), int(city.position[1]))) for city in self.cities]
+                "cities": [(city.people_amount, city.level, (int(city.position[0]), int(city.position[1]))) for city in
+                           self.__cities]
             }
         return state

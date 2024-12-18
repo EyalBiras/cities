@@ -1,9 +1,10 @@
-import time
+from enum import StrEnum
 from enum import StrEnum
 from pathlib import Path
 
+from PIL import Image, ImageOps
+
 from cities_game.player_type import PlayerType
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageOps
 
 
 class ImagesType(StrEnum):
@@ -80,8 +81,10 @@ def get_knight(image_file: Path, size: tuple[int, int] | None = None, reflect: b
             animation.append(make_group(format_image(warrior_image, size, reflect), count=count))
     return animation
 
+
 def load_images(image_directory: Path) -> list[Image]:
     return [format_image(image_file) for image_file in image_directory.glob("*")]
+
 
 IMAGES_BASE_FILE = Path(__file__).parent.parent / "Tiny Swords" / "Tiny Swords (Update 010)"
 DECORATIONS_DIRECTORY = IMAGES_BASE_FILE / "Deco"
@@ -100,7 +103,6 @@ ENEMY_KNIGHT_FILE = ASSETS_BASE_FILE / "Troops" / "Warrior" / "Red"
 
 NEUTRAL_CITY_FILE = ASSETS_BASE_FILE / "Buildings" / "Tower" / "Tower_yellow.png"
 NEUTRAL_CAPITAL_FILE = ASSETS_BASE_FILE / "Buildings" / "Castle" / "Castle_yellow.png"
-
 
 KNIGHT_SIZE = (int(get_knight(PLAYER_KNIGHT_FILE)[0].size[0] // 2), int(get_knight(PLAYER_KNIGHT_FILE)[1].size[1] // 2))
 

@@ -1,7 +1,7 @@
-import pathlib
+import shutil
 from pathlib import Path
 from typing import Annotated
-import shutil
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 
@@ -90,6 +90,7 @@ async def get_battle(
     for game in games_directory.glob("*"):
         group_battle.append(game.name)
     return group_battle
+
 
 @router.get("/download_battle/{enemy}/{filename}")
 async def download_file(

@@ -14,5 +14,13 @@
     ],
     "owner": "a",
     "join_requests": []
+  },
+  {
+    "name": "GroupS",
+    "members": [
+      "aa"
+    ],
+    "owner": "aa",
+    "join_requests": []
   }
 ]
