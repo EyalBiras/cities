@@ -1,26 +1,18 @@
 [
   {
-    "name": "Morbius",
+    "name": "Castli",
     "members": [
-      "Eyal"
+      "Castli"
     ],
-    "owner": "Eyal",
+    "owner": "Castli",
     "join_requests": []
   },
   {
-    "name": "group2",
+    "name": "MegaKnight",
     "members": [
-      "a"
+      "Mega"
     ],
-    "owner": "a",
-    "join_requests": []
-  },
-  {
-    "name": "GroupS",
-    "members": [
-      "aa"
-    ],
-    "owner": "aa",
+    "owner": "Mega",
     "join_requests": []
   }
 ]

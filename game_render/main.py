@@ -2,7 +2,7 @@ import gzip
 import json
 
 import pygame
-from r import GameRender
+from game_viewer import GameRender
 from menu import Menu
 
 

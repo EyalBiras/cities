@@ -68,8 +68,8 @@ class GameRender:
     def render_turn(self):
         self.display.fill((0, 0, 0))
 
-        if self.turn >= len(self.game):
-            self.turn = len(self.game) - 1
+        if self.turn >= len(self.game) - 1:
+            self.turn = len(self.game) - 2
         turn = self.game[self.turn]
         self.display.blit(self.background)
 
@@ -111,11 +111,12 @@ class GameRender:
                 self.display.blit(capital_info_surface,
                                   (int(capital_position[0]) - size[0] // 2, int(capital_position[1]) - size[1] // 2))
                 for group in t["groups"]:
+                    print(group)
                     animation_phase = random.randint(0,5)
                     if group[2] == 1:
                         group_image = get_group_image("player", group[0])[animation_phase]
                     else:
-                        group_image = get_group_image("player", group[0], reflect=True)[animation_phase]
+                        group_image = get_group_image("enemy", group[0], reflect=True)[animation_phase]
                     size = group_image.size
                     self.display.blit(group_image, group[1])
                     group_info = self.group_font.render(f"Total Soldiers: {group[0]}",
@@ -123,7 +124,7 @@ class GameRender:
                     self.display.blit(group_info,
                                       (
                                       int(group[1][0]) - size[0] // 2, int(group[1][1]) - size[1] // 2))
-        if self.turn == len(self.game) - 1:
+        if self.turn == len(self.game) - 2:
             text_surface = self.won_font.render(f"{self.winner} Won!", True, (255, 215, 0))
             self.display.blit(text_surface, (WINDOW_SIZE[0] // 2 - 100, WINDOW_SIZE[1] // 2 - 100))
 

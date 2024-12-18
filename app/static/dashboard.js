@@ -102,3 +102,33 @@ window.onload = () => {
         updateDashboard();
     }
 };
+async function downloadTemplate() {
+    try {
+        const response = await fetch('/download_template');
+        if (!response.ok) {
+            throw new Error('Download failed');
+        }
+
+        // Get the blob from the response
+        const blob = await response.blob();
+
+        // Create a URL for the blob
+        const url = window.URL.createObjectURL(blob);
+
+        // Create a temporary link element
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'Template.rar'; // The filename to save as
+
+        // Append link to body, click it, and remove it
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Clean up the URL
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error downloading template:', error);
+        alert('Failed to download template. Please try again.');
+    }
+}

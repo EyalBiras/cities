@@ -130,7 +130,7 @@ class Engine:
     def do_turn(self) -> None:
         player_game = self.create_game_player()
         try:
-            with timeout(TIME_LIMIT + 1200000):
+            with timeout(TIME_LIMIT):
                 t_start = time.perf_counter()
                 self.player_bot.do_turn(player_game)
             t_end = time.perf_counter()
@@ -163,10 +163,10 @@ class Engine:
             self.enemy_time += t_end - t_start
             enemy_actions = [city.action for city in enemy_game.player.cities]
             enemy_actions.append(enemy_game.player.capital_city.action)
-            for action in player_actions:
+            for action in enemy_actions:
                 if action is not None:
                     self.check_action(action)
-            self.player_actions = player_actions
+            self.enemy_actions = enemy_actions
         except Exception as e:
             self.winner = "player"
             return
@@ -304,10 +304,17 @@ class Engine:
         while self.winner is None:
             self.update()
 
+        if self.winner is not None:
+            if self.winner == "player":
+                self.winner = self.player_name
+            elif self.winner == "enemy":
+                self.winner = self.enemy_name
+            else:
+                self.winner = "draw"
+
         game = {"id": str(self.id),
                 "game": self.game,
                 "winner": self.winner}
-
         for handler in self.player_logger.handlers:
             handler.close()
             self.player_logger.removeHandler(handler)

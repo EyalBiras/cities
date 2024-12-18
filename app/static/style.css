@@ -183,3 +183,27 @@ button:active {
   padding: 5px;
   border-bottom: 1px solid #eee;
 }
+.download-template-btn {
+    position: absolute;  /* Changed from fixed to absolute */
+    top: 20px;
+    right: 20px;
+    padding: 8px 15px;  /* Reduced padding */
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;  /* Prevents text wrapping */
+    width: auto;  /* Let content determine width */
+    min-width: fit-content;  /* Ensures button fits content */
+}
+
+.download-template-btn:hover {
+    background-color: #45a049;
+}
+
+/* Add this to ensure proper positioning context */
+#dashboard {
+    position: relative;  /* Creates positioning context for absolute button */
+}

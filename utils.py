@@ -22,7 +22,7 @@ def reset_game():
     neutral_cities = []
     for building_type, position in game_map["buildings"]:
         if building_type == Tile.CITY:
-            neutral_cities.append(City(5, 3, np.array(position)))
+            neutral_cities.append(City(5, 0, np.array(position)))
         elif building_type == Tile.CAPITAL:
             if position[0] < WINDOW_SIZE[0] // 2:
                 p1_capital = Capital(5, 1, np.array((position)))
@@ -32,9 +32,9 @@ def reset_game():
     decorations = []
     for decoration, position in game_map["decorations"]:
         decorations.append((Image.open(decoration), position))
-    p1 = Player(neutral_cities, p1_capital, [])
+    p1 = Player([], p1_capital, [])
     p2 = Player([], p2_capital, [])
-    neutral_player = Player([], None, [])
+    neutral_player = Player(neutral_cities, None, [])
     print(p2_capital.position)
     return p1, p2, neutral_player, decorations
 
