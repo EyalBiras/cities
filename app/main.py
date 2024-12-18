@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Annotated
 
-import fastapi_cli.cli
 import uvicorn
 from fastapi import Depends, FastAPI
 from fastapi.responses import HTMLResponse

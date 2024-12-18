@@ -1,38 +1,38 @@
 {
   "group1": {
-    "total score": 2.0,
-    "wins": 15,
-    "losses": 11,
-    "draws": 4
+    "total score": 2.5,
+    "wins": 0,
+    "losses": 0,
+    "draws": 5
   },
   "group2": {
-    "total score": 5.0,
-    "wins": 15,
-    "losses": 15,
-    "draws": 0
+    "total score": 2.5,
+    "wins": 0,
+    "losses": 0,
+    "draws": 5
   },
   "group22": {
-    "total score": 2.0,
+    "total score": 2.5,
     "wins": 0,
-    "losses": 1,
-    "draws": 4
+    "losses": 0,
+    "draws": 5
   },
   "group222": {
-    "total score": 2.0,
+    "total score": 2.5,
     "wins": 0,
-    "losses": 1,
-    "draws": 4
+    "losses": 0,
+    "draws": 5
   },
   "group3": {
-    "total score": 2.0,
+    "total score": 2.5,
     "wins": 0,
-    "losses": 1,
-    "draws": 4
+    "losses": 0,
+    "draws": 5
   },
   "Morbius": {
-    "total score": 2.0,
+    "total score": 2.5,
     "wins": 0,
-    "losses": 1,
-    "draws": 4
+    "losses": 0,
+    "draws": 5
   }
 }

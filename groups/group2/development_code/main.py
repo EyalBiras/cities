@@ -1,8 +1,10 @@
-from cities_game.game import Game
-from cities_game.bot import Bot
+from cities_game import Bot, Game
+
 
 class MyBot(Bot):
     def do_turn(self, game: Game) -> None:
+        game.logger.debug("hi")
+        print("hi")
         if game.get_my_city_capital().people_amount > 10:
             cities = [game.get_my_city_capital()]
             for city in cities:

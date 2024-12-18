@@ -106,13 +106,27 @@ async function fetchGroupGames(groupName) {
             `<div class="game-item" data-game-name="${game}">${game}</div>`
         ).join('');
 
-        // Add click handler after populating the list
-        addClickHandler(groupName);
+        // Remove any existing event listeners before adding new ones
+        groupGamesListEl.removeEventListener('click', gameClickHandler);
+        groupGamesListEl.addEventListener('click', gameClickHandler);
 
         groupGamesSectionEl.style.display = 'block';
     } catch (error) {
         console.error('Failed to fetch group games:', error);
         displayError("Failed to load group games.");
+    }
+}
+function gameClickHandler(event) {
+    if (event.target.matches('.game-item')) {
+        const gameName = event.target.textContent;
+        console.log(`Game clicked: ${gameName}`);
+
+        const downloadUrl = `/download_game/${gameName}`;
+        const fileName = `${gameName}.zip`;
+
+        console.log(`Attempting to download: ${fileName} from ${downloadUrl}`);
+
+        triggerDownload(downloadUrl, fileName);
     }
 }
 
@@ -141,24 +155,12 @@ function addClickHandler(groupName) {
 }
 
 function triggerDownload(url, fileName) {
-    console.log(`Triggering download: ${fileName} from ${url}`);
-
-    // Create a temporary anchor element
-    var a = document.createElement("a");
-    a.style.display = 'none';
+    const a = document.createElement("a");
     a.href = url;
     a.download = fileName;
     document.body.appendChild(a);
     a.click();
-    window.URL.revokeObjectURL(a.href);
     document.body.removeChild(a);
-
-    // Check if the download started
-    if (window.event && window.event.preventDefault) {
-        console.log('Download prevented. Check CORS settings.');
-    } else {
-        console.log('Download initiated successfully.');
-    }
 }
 
 // Initialize

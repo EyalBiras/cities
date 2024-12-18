@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from typing import Annotated
 
@@ -14,6 +15,11 @@ RESULTS_FILE = file.parent.parent.parent / "results.json"
 GAMES_DIRECTORY = file.parent.parent.parent / "games"
 
 router = APIRouter()
+
+
+def does_filename_contains_group(filename: str, group: str) -> bool:
+    pattern = r'\b' + re.escape(group) + r'\b'
+    return bool(re.search(pattern, filename))
 
 
 @router.get("/get_tournament_results")
@@ -35,7 +41,7 @@ async def get_group_games(group_name: str):
 
     group_games = []
     for game in GAMES_DIRECTORY.glob("*"):
-        if group_name in game.name:
+        if does_filename_contains_group(game.name, group_name):
             group_games.append(game.name)
     return group_games
 

@@ -85,6 +85,11 @@ router = APIRouter()
 
 @router.post("/signup")
 async def signup(user: UserCreate):
+    if len(user.username) == 0 or len(user.password) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You must have username or password with more than one character"
+        )
     if user.username in users_db:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
