@@ -101,6 +101,7 @@ def validate_file(file: Path, group_files: list[str]) -> bool:
 
 
 def validate_group(group: Path) -> bool:
+    print(group.parent)
     files = [Path(file) for file in group.rglob("*") if is_python(file)]
     group_files = [file.name.replace(".py", "") for file in files]
     found_main = False
@@ -204,9 +205,6 @@ def move_development_to_tournament(group: str) -> None:
 
 
 def run_tournament():
-    games_path = GAMES_BASE_PATH / "games"
-    games_path.mkdir(parents=True, exist_ok=True)
-
     t1 = time.perf_counter()
     groups = [Path(file).name for file in GROUPS.glob("*") if validate_group(Path(file / "development_code"))]
     for group in groups:

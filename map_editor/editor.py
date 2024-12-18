@@ -159,6 +159,3 @@ class Editor:
             self.clock.tick(60)
 
 
-if __name__ == "__main__":
-    e = Editor()
-    e.run()

@@ -291,13 +291,6 @@ class Engine:
             images.append(self.draw_turn())
         print(self.winner)
         logging.shutdown()
-        if self.winner is not None:
-            if self.winner == "player":
-                self.winner = self.player_name
-            elif self.winner == "enemy":
-                self.winner = self.enemy_name
-            else:
-                self.winner = "draw"
         return images, self.winner
 
     def make_game(self):

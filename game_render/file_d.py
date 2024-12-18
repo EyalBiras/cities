@@ -13,7 +13,7 @@ class FileDrawer:
         if self.rect.collidepoint(mouse_position):
             if self.file.is_dir():
                 if len(self.children) == 0:
-                    self.children = [FileDrawer(f) for f in self.file.glob("*") if show_file(f)]
+                    self.children = [FileDrawer(f) for f in self.file.glob("*")]
                 else:
                     self.children = []
             else:
@@ -35,7 +35,3 @@ class FileDrawer:
 
 
 
-def show_file(file: Path):
-    if file.is_dir():
-        return True
-    return file.name.endswith(".json.gzip") or file.name.endswith(".log")
