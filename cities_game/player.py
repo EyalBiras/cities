@@ -81,7 +81,7 @@ class Player:
                            self.__cities],
                 "capital": [(self.__capital_city.people_amount, self.__capital_city.level,
                              ((int(self.__capital_city.position[0])), int(self.__capital_city.position[1])))],
-                "groups": [(group.people_amount, (int(group.position[0]), int(group.position[1]))) for group in
+                "groups": [(group.people_amount, (int(group.position[0]), int(group.position[1])), get_direction(group.source.position[0], group.destination.position[0])) for group in
                            self.__groups],
             }
         else:
@@ -90,3 +90,9 @@ class Player:
                            self.__cities]
             }
         return state
+
+def get_direction(source_x, destination_x):
+    direction = destination_x - source_x
+    if direction < 0:
+        return -1
+    return 1
