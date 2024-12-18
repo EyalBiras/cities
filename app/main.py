@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from models import User
-from routes import auth, group, file_upload, admin, results, battle
+from routes import auth, group, file_upload, admin, results, battle, template
 from routes.auth import get_current_active_user
 
 # to get a string like this run:
@@ -21,6 +21,7 @@ app.include_router(file_upload.router)
 app.include_router(admin.router)
 app.include_router(results.router)
 app.include_router(battle.router)
+app.include_router(template.router)
 static_directory = Path(__file__).parent / "static"
 
 app.mount("/static", StaticFiles(directory=static_directory), name="static")
@@ -82,4 +83,4 @@ async def get_battle_page():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=9000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

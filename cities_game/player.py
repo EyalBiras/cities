@@ -71,6 +71,9 @@ class Player:
         if internal_update_flag.is_allowed():
             for city in self.__conquered_cities:
                 city.people_amount *= -1
+                print(city.level)
+                if city.level == 0:
+                    city.level = 1
                 self.cities.append(city)
             self.__conquered_cities = []
 

@@ -5,28 +5,16 @@
     "hashed_password": "$2b$12$LI728mCmmOOwQlK8uRDE2.U95kvtdIv/SSYWNfHI.bO5HOQ3ZnJ4K",
     "disabled": false
   },
-  "Eyal": {
-    "username": "Eyal",
-    "group": "Morbius",
-    "hashed_password": "$2b$12$ZU3ZaiUuPPA4bqdxcZgsIO7YXchhOl4J4jBQtsLawulSM73c9.Z7O",
+  "Castli": {
+    "username": "Castli",
+    "group": "Castli",
+    "hashed_password": "$2b$12$a3KCh/vsVaAQrkizAdNrCeNv/8qmsjMRbnNW3a6U5MWK9VAyMTaYG",
     "disabled": false
   },
-  "a": {
-    "username": "a",
-    "group": "group2",
-    "hashed_password": "$2b$12$LqI9hDtnPi/kAhYGdj6F0egeSr5VEMVUGVxWvH.Y9wr/bb8NgGD.W",
-    "disabled": false
-  },
-  "aaaaa": {
-    "username": "aaaaa",
-    "group": null,
-    "hashed_password": "$2b$12$mfMJI1LhGg8xPN7w49kmTugzONm0O08neKC6fvIUNEoSvOmszWjSi",
-    "disabled": false
-  },
-  "aa": {
-    "username": "aa",
-    "group": "GroupS",
-    "hashed_password": "$2b$12$ldPLDik/hdrLAblL4o8YCOWZOdAD8ZBqntJpxHloFMfEKlJmv45Ni",
+  "Mega": {
+    "username": "Mega",
+    "group": "MegaKnight",
+    "hashed_password": "$2b$12$6GM/54CoOMI1giMnZ9/O1O7TgiwGpOmLVkQBiKZlRISWLYDE0diOG",
     "disabled": false
   }
 }
