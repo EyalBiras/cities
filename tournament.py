@@ -228,3 +228,4 @@ def run_tournament():
     print(list(GROUPS.glob("*")))
     print(time.perf_counter() - t1)
 
+
