@@ -1,4 +1,5 @@
 import pathlib
+import shutil
 import socket
 import time
 from pprint import pformat
@@ -8,6 +9,8 @@ from GUI.networking.network_code import Codes
 from GUI.networking.constants import KILO_BYTE, INVALID_USERNAME_OR_PASSWORD
 from GUI.networking.socket_wrapper import SocketWrapper
 from GUI.db.db import DB
+from tournament import battle
+
 DEVELOPMENT_CODE_DIR = "development_code"
 ONE_MEGABYTE = 1048576
 MAX_SIZE = ONE_MEGABYTE
@@ -36,6 +39,24 @@ class ServerSocket:
         username, password, command, details = x
         print(f"{username=}, {password=}, {command=}, {details=}")
         verification_code = Codes.OK.value
+
+        if command == Command.SIGN_UP:
+            if self.db.signup_user(username, password):
+                verification_code = Codes.OK.value
+                return_code = Codes.OK.value
+                message = Codes.OK.value
+                self.__server_socket.send_message_secure(f"{verification_code}|{message}|{return_code}")
+                self.__server_socket.receive_message_secure()
+                return Codes.OK.value, ""
+            else:
+                verification_code = Codes.INVALID_USERNAME_OR_PASSWORD.value
+                return_code = Codes.INVALID_USERNAME_OR_PASSWORD.value
+                message = Codes.INVALID_USERNAME_OR_PASSWORD.value
+                self.__server_socket.send_message_secure(f"{verification_code}|{message}|{return_code}")
+                self.__server_socket.receive_message_secure()
+                return INVALID_USERNAME_OR_PASSWORD, ""
+
+
         if not self.db.validate_user(username, password):
             verification_code = Codes.INVALID_USERNAME_OR_PASSWORD.value
             message = "NO"
@@ -46,6 +67,22 @@ class ServerSocket:
 
         message = ""
         return_code = Codes.OK
+        if command == Command.BATTLE.value:
+            if self.db.is_in_group(username):
+                enemy_group = get_group_directory(details)
+                group = self.db.get_group(username)
+                user_group = get_group_directory(group.name)
+                games_directory = user_group / "battles"
+                for game in pathlib.Path(games_directory).glob("*"):
+                    if details in game.name:
+                        shutil.rmtree(game)
+                battle(group=user_group, enemy=enemy_group, games_directory=games_directory)
+        if command == Command.UPLOAD_FILE.value:
+            return_code = Codes.OK
+            message = ""
+            self.__server_socket.send_message_secure(
+                f"{verification_code}|{message}|{return_code.value}")
+            self.__server_socket.receive_file(pathlib.Path("Hi.py"))
         if command == Command.GET_GROUPS.value:
             groups = self.db.get_groups()
             message = f"({str(groups[0])}"
@@ -105,10 +142,14 @@ class ServerSocket:
         if command == Command.GET_JOIN_REQUESTS.value:
             if self.db.is_in_group(username):
                 join_requests = self.db.get_join_requests(username)
-                message = f"{join_requests[0]}"
-                for request in join_requests[1:]:
-                    message += f",{request}"
-                return_code = Codes.OK
+                if join_requests:
+                    message = f"{join_requests[0]}"
+                    for request in join_requests[1:]:
+                        message += f",{request}"
+                    return_code = Codes.OK
+                else:
+                    message = ""
+                    return_code = Codes.OK
 
             else:
                 return_code = Codes.NOT_IN_GROUP

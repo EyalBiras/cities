@@ -1,167 +1,141 @@
 import sqlite3 as sql
-
+import threading
 from GUI.db.group import Group
 from GUI.db.hash_utils import hash_password
+
 admin_username = "admin"
 admin_password = "admin"
 
 NO_GROUP = "none"
+
+
 class DB:
     def __init__(self):
-        self.connection = sql.connect("Users.db")
-        self.connection.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, user_group TEXT, is_owner INTEGER, join_request TEXT)")
-        self.connection.execute(f"INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES('{admin_username}', '{admin_password}', 'MegaKnight', '1', '{NO_GROUP}')")
-        self.connection.execute(f"INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES('a1', 'b', '{NO_GROUP}', '0', '{NO_GROUP}')")
-        self.connection.execute(f"INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES('a2', 'b', 'Castli', '1', '{NO_GROUP}')")
+        self.lock = threading.Lock()
+        self.connection = sql.connect("Users.db", check_same_thread=False)
+        with self.connection:
+            self.connection.execute(
+                "CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, user_group TEXT, is_owner INTEGER, join_request TEXT)")
+            self.connection.execute(
+                "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
+                (admin_username, admin_password, 'MegaKnight', 1, NO_GROUP))
+            self.connection.execute(
+                "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
+                ('a1', 'b', NO_GROUP, 0, NO_GROUP))
+            self.connection.execute(
+                "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
+                ('a2', 'b', 'Castli', 1, NO_GROUP))
+            self.connection.execute(
+                "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
+                ('a3', 'b', NO_GROUP, 0, 'MegaKnight'))
+            self.connection.execute(
+                "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
+                ('a5', 'b', NO_GROUP, 0, 'MegaKnight'))
 
-        self.connection.execute(f"INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES('a3', 'b', '{NO_GROUP}', '0', 'MegaKnight')")
-        self.connection.execute(f"INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES('a5', 'b', '{NO_GROUP}', '0', 'MegaKnight')")
-
-
-        self.cursor = self.connection.cursor()
-        print(self.cursor.execute("SELECT * FROM users").fetchall())
+    def execute_query(self, query: str, params: tuple = ()):
+        with self.lock:
+            cursor = self.connection.cursor()
+            cursor.execute(query, params)
+            self.connection.commit()
+            return cursor
 
     def validate_user(self, username: str, password: str) -> bool:
-        self.cursor.execute("SELECT * FROM users WHERE username=? AND password =?", (username, hash_password(password)))
-        if not self.cursor.fetchone(): 
-            return False
-        else:
-            return True
+        hashed_password = hash_password(password)
+        cursor = self.execute_query("SELECT * FROM users WHERE username=? AND password=?", (username, hashed_password))
+        return cursor.fetchone() is not None
 
     def signup_user(self, username: str, password: str) -> bool:
-        self.cursor.execute("SELECT username FROM users WHERE username=?", (username, ))
-        if self.cursor.fetchone() is not None:
+        cursor = self.execute_query("SELECT username FROM users WHERE username=?", (username,))
+        if cursor.fetchone():
             return False
-
-        self.cursor.execute(f"INSERT INTO users VALUES(?, ?, ?, ?)", (username, hash_password(password), NO_GROUP, 0, NO_GROUP))
-        self.connection.commit()
+        self.execute_query("INSERT INTO users VALUES(?, ?, ?, ?, ?)",
+                           (username, hash_password(password), NO_GROUP, 0, NO_GROUP))
         return True
 
     def create_group(self, username: str, group_name: str) -> None:
-        self.cursor.execute(f"""
-            UPDATE users 
-            SET user_group = '{group_name}', is_owner = 1, join_request = '{NO_GROUP}'
-            WHERE username = '{username}'
-        """)
+        self.execute_query("UPDATE users SET user_group = ?, is_owner = 1, join_request = ? WHERE username = ?",
+                           (group_name, NO_GROUP, username))
 
     def is_in_group(self, username: str) -> bool:
-        self.cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-        user = self.cursor.fetchone()
-        print(f"{user=}")
-        if user is None:
-            return False
-        if user[2] == NO_GROUP:
-            return False
-        return True
+        cursor = self.execute_query("SELECT user_group FROM users WHERE username=?", (username,))
+        user = cursor.fetchone()
+        return user is not None and user[0] != NO_GROUP
 
     def is_group_owner(self, username: str) -> bool:
-        self.cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-        user = self.cursor.fetchone()
-        if user is None:
-            return False
-        if user[3]:
-            return True
-        return False
+        cursor = self.execute_query("SELECT is_owner FROM users WHERE username=?", (username,))
+        user = cursor.fetchone()
+        return user is not None and bool(user[0])
 
     def leave_group(self, username: str) -> None:
-        self.cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-        user = self.cursor.fetchone()
-        if user is None:
-            return
-        self.cursor.execute(f"""
-                    UPDATE users 
-                    SET user_group = '{NO_GROUP}', is_owner = 0, join_request = '{NO_GROUP}'
-                    WHERE username = '{username}'
-                """)
+        self.execute_query("UPDATE users SET user_group = ?, is_owner = 0, join_request = ? WHERE username = ?",
+                           (NO_GROUP, NO_GROUP, username))
 
     def get_groups(self) -> list[Group]:
+        cursor = self.execute_query("SELECT username, user_group, is_owner FROM users")
         groups_dict = {}
-        for user in self.cursor.execute("SELECT * FROM users").fetchall():
-            if user[2] != NO_GROUP:
-                if user[2] in groups_dict:
-                    groups_dict[user[2]][0].append(user[0])
-                else:
-                    groups_dict[user[2]] = [[user[0]], None]
-                if user[3]:
-                    groups_dict[user[2]][1] = user[0]
-        groups = []
-        for group, members_owner in groups_dict.items():
-            members, owner = members_owner[0], members_owner[1]
-            groups.append(Group(group, members, owner))
-        return list(groups)
+        for user, group, is_owner in cursor.fetchall():
+            if group != NO_GROUP:
+                if group not in groups_dict:
+                    groups_dict[group] = ([], None)
+                groups_dict[group][0].append(user)
+                if is_owner:
+                    groups_dict[group] = (groups_dict[group][0], user)
+
+        return [Group(name, members, owner) for name, (members, owner) in groups_dict.items()]
 
     def ask_for_join_request(self, username: str, group_name: str) -> bool:
-        self.cursor.execute("SELECT * FROM users WHERE user_group=?", (group_name,))
-        if self.cursor.fetchone() is None:
+        cursor = self.execute_query("SELECT 1 FROM users WHERE user_group=?", (group_name,))
+        if cursor.fetchone() is None:
             return False
-        self.cursor.execute(f"""
-                    UPDATE users 
-                    SET join_request = '{group_name}'
-                    WHERE username = '{username}'
-                """)
+        self.execute_query("UPDATE users SET join_request = ? WHERE username = ?", (group_name, username))
         return True
 
     def get_join_requests(self, username: str) -> list[str]:
-        self.cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-        owner = self.cursor.fetchone()
-        if owner is  None:
+        cursor = self.execute_query("SELECT user_group, is_owner FROM users WHERE username=?", (username,))
+        owner = cursor.fetchone()
+        if not owner or not owner[1]:
             return []
-        if not owner[3]:
-            return []
-        join_requests = []
-        for user in self.cursor.execute("SELECT * FROM users").fetchall():
-            if user[4] == owner[2]:
-                join_requests.append(user[0])
-        return join_requests
+
+        cursor = self.execute_query("SELECT username FROM users WHERE join_request=?", (owner[0],))
+        return [user[0] for user in cursor.fetchall()]
 
     def accept_join_request(self, username: str, accepted_user: str) -> bool:
-        self.cursor.execute("SELECT * FROM users WHERE username=?", (accepted_user,))
-        user_joiner = self.cursor.fetchone()
-        if user_joiner is None:
+        cursor = self.execute_query("SELECT user_group FROM users WHERE username=?", (username,))
+        owner = cursor.fetchone()
+        if not owner:
             return False
-        self.cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-        owner = self.cursor.fetchone()
-        if not owner[3]:
+
+        cursor = self.execute_query("SELECT join_request FROM users WHERE username=?", (accepted_user,))
+        user_joiner = cursor.fetchone()
+        if not user_joiner or user_joiner[0] != owner[0]:
             return False
-        if user_joiner[4] != owner[2]:
-            return False
-        self.cursor.execute(f"""
-                            UPDATE users 
-                            SET join_request = '{NO_GROUP}', user_group = '{owner[2]}'
-                            WHERE username = '{accepted_user}'
-                        """)
+
+        self.execute_query("UPDATE users SET join_request = ?, user_group = ? WHERE username = ?",
+                           (NO_GROUP, owner[0], accepted_user))
         return True
 
-
-    def get_group(self, username) -> Group:
-        self.cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-        user_ = self.cursor.fetchone()
-        if user_ is None:
-            return
-        if user_[2] == NO_GROUP:
+    def get_group(self, username: str) -> Group:
+        cursor = self.execute_query("SELECT user_group FROM users WHERE username=?", (username,))
+        user_group = cursor.fetchone()
+        if not user_group or user_group[0] == NO_GROUP:
             return Group(NO_GROUP, [], "")
+
+        cursor = self.execute_query("SELECT username, is_owner FROM users WHERE user_group=?", (user_group[0],))
         members = []
         owner = ""
-        for user in self.cursor.execute("SELECT * FROM users").fetchall():
-            if user[2] == user_[2]:
-                members.append(user[0])
-                if user[3]:
-                    owner = user[0]
-        return Group(user_[2], members, owner)
+        for user, is_owner in cursor.fetchall():
+            members.append(user)
+            if is_owner:
+                owner = user
 
-    def is_asking_for_join_request(self, requester:str, username: str) -> bool:
-        self.cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-        user = self.cursor.fetchone()
-        if user is None:
+        return Group(user_group[0], members, owner)
+
+    def is_asking_for_join_request(self, requester: str, username: str) -> bool:
+        cursor = self.execute_query("SELECT user_group, is_owner FROM users WHERE username=?", (username,))
+        owner = cursor.fetchone()
+        if not owner or not owner[1]:
             return False
-        if not user[3]:
-            return False
-        if not user[2]:
-            return False
-        self.cursor.execute("SELECT * FROM users WHERE username=?", (requester,))
-        request = self.cursor.fetchone()
-        if request is None:
-            return False
-        if request[4] == user[2]:
-            return True
-        return False
+
+        cursor = self.execute_query("SELECT join_request FROM users WHERE username=?", (requester,))
+        request = cursor.fetchone()
+        return request is not None and request[0] == owner[0]

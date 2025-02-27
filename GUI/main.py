@@ -6,7 +6,7 @@ from GUI.pages import GroupManagementPage
 from GUI.pages import CodePage
 from GUI.pages import LoginPage
 from GUI.pages import TournamentPage
-
+from GUI.pages import SignUpPage
 
 class MainView(tk.Frame):
     def __init__(self, client_socket: ClientSocket, *args, **kwargs):
@@ -17,6 +17,7 @@ class MainView(tk.Frame):
         self.group_page = GroupManagementPage(self.client_socket, self)
         self.tournament_page = TournamentPage(self.client_socket,self)
         self.battle_page = BattlePage(self.client_socket,self)
+        self.sign_up_page = SignUpPage(self.client_socket, self)
 
         button_frame = tk.Frame(self)
         self.container = tk.Frame(self)
@@ -28,20 +29,32 @@ class MainView(tk.Frame):
         self.group_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
         self.tournament_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
         self.battle_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
+        self.sign_up_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
+
 
         login_page_button = tk.Button(button_frame, text="Login", command=self.create_login_page)
         code_page_button = tk.Button(button_frame, text="Code", command=self.create_code_page)
         group_page_button = tk.Button(button_frame, text="Group", command=self.create_group_page)
         tournament_page_button = tk.Button(button_frame, text="Tournament", command=self.create_tournament_page)
         battle_page_button = tk.Button(button_frame, text="Battle", command=self.create_battle_page)
+        sign_up_page_button = tk.Button(button_frame, text="sign up", command=self.create_sign_up_page)
+
 
         login_page_button.pack(side="left")
         code_page_button.pack(side="left")
         group_page_button.pack(side="left")
         tournament_page_button.pack(side="left")
         battle_page_button.pack(side="left")
+        sign_up_page_button.pack(side="left")
 
         self.login_page.lift()
+
+    def create_sign_up_page(self):
+        self.sign_up_page.destroy()
+        self.sign_up_page = SignUpPage(self.client_socket, self)
+        self.sign_up_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
+
+        self.sign_up_page.lift()
 
     def create_group_page(self):
         self.group_page.destroy()

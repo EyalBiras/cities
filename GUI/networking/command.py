@@ -21,5 +21,6 @@ class Command(str, Enum):
     DOWNLOAD_BATTLE = "download battle"
     GET_RESULTS = "Get results"
     DOWNLOAD_RESULTS_INFO = "download results game"
+    SIGN_UP = "sign up"
 
 
