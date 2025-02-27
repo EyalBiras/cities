@@ -41,16 +41,12 @@ class CodePage(tk.Frame):
 
     def open_file_dialog(self):
         file_path = filedialog.askopenfilename(title="Select a File",
-                                               filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+                                               filetypes=[("python file", "*.py"), ("All files", "*.*")])
         if file_path:
             self.selected_file_label.config(text=f"Selected File: {file_path}")
             self.process_file(file_path)
 
     def process_file(self, file_path):
-        try:
-            with open(file_path, 'r') as file:
-                file_contents = file.read()
-                self.file_text.delete('1.0', tk.END)
-                self.file_text.insert(tk.END, file_contents)
-        except Exception as e:
-            self.selected_file_label.config(text=f"Error: {str(e)}")
+        return_code, _ = self.client_socket.send_command(Command.UPLOAD_FILE)
+        self.client_socket.send_file(pathlib.Path(file_path))
+

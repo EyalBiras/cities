@@ -19,7 +19,9 @@ class BattlePage(tk.Frame):
         self.file_frame = tk.Frame(self)
         self.file_frame.pack(side=tk.RIGHT, padx=10, pady=10)
         self.l = None
-        # self.show_available_groups()
+        self.battle_button = tk.Button(self, text="Battle", font=("Arial", 12), command=self.battle)
+        self.battle_button.pack(pady=10)
+        self.show_available_groups()
         self.show_battles()
 
     def show_battles(self):
@@ -93,3 +95,6 @@ class BattlePage(tk.Frame):
         if return_code == Codes.OK:
             self.client_socket.receive_file(pathlib.Path(f"battles/{group_name}/{file_name}"))
 
+    def battle(self):
+        print(self.selected_group)
+        return_code, _ = self.client_socket.send_command(Command.BATTLE, details=self.selected_group.name)

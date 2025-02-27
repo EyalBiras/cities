@@ -18,6 +18,11 @@ class ClientSocket:
         print(return_code)
         return return_code == Codes.OK
 
+    def sign_up(self) -> bool:
+        return_code, _ = self.send_command(Command.SIGN_UP)
+        print(return_code)
+        return  return_code == Codes.OK
+
     def send_command(self, command: Command, details:str = "") -> tuple[Codes, str]:
         print(f"{command=}")
         self.__client_socket.send_message_secure(f"{self.username},{self.password},{command.value},{details}")
