@@ -4,6 +4,7 @@ import tkinter as tk
 from GUI.db.group import Group
 from GUI.networking import ClientSocket, Command, Codes
 
+
 class GroupManagementPage(tk.Frame):
     def __init__(self, client_socket: ClientSocket, *args, **kwargs) -> None:
         tk.Frame.__init__(self, *args, **kwargs)

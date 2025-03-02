@@ -1,8 +1,10 @@
 import pathlib
 import tkinter as tk
 from tkinter import filedialog
+
 from GUI.networking import ClientSocket
 from GUI.networking import Codes, Command
+
 
 class CodePage(tk.Frame):
     def __init__(self, client_socket: ClientSocket, *args, **kwargs):
@@ -49,4 +51,3 @@ class CodePage(tk.Frame):
     def process_file(self, file_path):
         return_code, _ = self.client_socket.send_command(Command.UPLOAD_FILE)
         self.client_socket.send_file(pathlib.Path(file_path))
-

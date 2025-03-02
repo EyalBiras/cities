@@ -1,9 +1,8 @@
 import pathlib
-import socket
 
 from GUI.networking.command import Command
-from GUI.networking.network_code import Codes
 from GUI.networking.constants import KILO_BYTE
+from GUI.networking.network_code import Codes
 from GUI.networking.socket_wrapper import SocketWrapper
 
 
@@ -14,23 +13,23 @@ class ClientSocket:
         self.password = ""
 
     def validate_user(self) -> bool:
-        return_code, _  = self.send_command(Command.LOGIN)
+        return_code, _ = self.send_command(Command.LOGIN)
         print(return_code)
         return return_code == Codes.OK
 
     def sign_up(self) -> bool:
         return_code, _ = self.send_command(Command.SIGN_UP)
         print(return_code)
-        return  return_code == Codes.OK
+        return return_code == Codes.OK
 
-    def send_command(self, command: Command, details:str = "") -> tuple[Codes, str]:
+    def send_command(self, command: Command, details: str = "") -> tuple[Codes, str]:
         print(f"{command=}")
         self.__client_socket.send_message_secure(f"{self.username},{self.password},{command.value},{details}")
         x = self.__client_socket.receive_message_secure(KILO_BYTE)
         print(f"{command=},{x=}")
         verfication_code = x[:x.find("|")]
-        message = x[x.find("|")+1:x.rfind("|")]
-        return_code = x[x.rfind("|")+1:]
+        message = x[x.find("|") + 1:x.rfind("|")]
+        return_code = x[x.rfind("|") + 1:]
         self.__client_socket.send_message_secure(Codes.OK.value)
         return return_code, message
 
@@ -48,5 +47,5 @@ class ClientSocket:
             return self.__client_socket.send_file(file_path, chunk_size)
         return Codes.INVALID_USERNAME_OR_PASSWORD
 
-    def receive_file(self, file_path: pathlib.Path="") -> Codes:
+    def receive_file(self, file_path: pathlib.Path = "") -> Codes:
         self.__client_socket.receive_file(file_path)

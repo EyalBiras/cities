@@ -1,14 +1,11 @@
 import pathlib
 import shutil
-import socket
-import time
-from pprint import pformat
 
-from GUI.networking import Command
-from GUI.networking.network_code import Codes
-from GUI.networking.constants import KILO_BYTE, INVALID_USERNAME_OR_PASSWORD
-from GUI.networking.socket_wrapper import SocketWrapper
 from GUI.db.db import DB
+from GUI.networking import Command
+from GUI.networking.constants import KILO_BYTE, INVALID_USERNAME_OR_PASSWORD
+from GUI.networking.network_code import Codes
+from GUI.networking.socket_wrapper import SocketWrapper
 from tournament import battle
 
 DEVELOPMENT_CODE_DIR = "development_code"
@@ -23,6 +20,8 @@ BASE_PATH = file.parent.parent.parent / "groups"
 print(BASE_PATH)
 GAMES_DIRECTORY = file.parent.parent.parent / "games"
 
+def is_dir_empty(directory: pathlib.Path) -> bool:
+    return not (directory.exists() and any(directory.iterdir()))
 
 def get_group_directory(group: str) -> pathlib.Path:
     return BASE_PATH / pathlib.Path(group)
@@ -35,6 +34,8 @@ class ServerSocket:
 
     def receive_message(self, size: int = KILO_BYTE) -> tuple[str, str]:
         x = self.__server_socket.receive_message_secure(size).split(",")
+        if x == [""]:
+            return "EXIT", "EXIT"
         print(f"{x=}")
         username, password, command, details = x
         print(f"{username=}, {password=}, {command=}, {details=}")
@@ -55,7 +56,6 @@ class ServerSocket:
                 self.__server_socket.send_message_secure(f"{verification_code}|{message}|{return_code}")
                 self.__server_socket.receive_message_secure()
                 return INVALID_USERNAME_OR_PASSWORD, ""
-
 
         if not self.db.validate_user(username, password):
             verification_code = Codes.INVALID_USERNAME_OR_PASSWORD.value
@@ -179,9 +179,16 @@ class ServerSocket:
                     print("hi")
                     return_code = Codes.OK
                     self.__server_socket.send_file(file)
-                    self.__server_socket.receive_message_secure()
             else:
                 return_code = Codes.NOT_IN_GROUP
+        if command == Command.GET_GROUPS_TO_BATTLE.value:
+            for group in BASE_PATH.glob("*"):
+                code = group / "tournament_code"
+                print(is_dir_empty(code), code)
+                if not is_dir_empty(code):
+                    message += f"{group.name}|"
+            message = message[:-1]
+            return_code = Codes.OK
         if command == Command.GET_USER_GROUP:
             if self.db.is_in_group(username):
                 group = self.db.get_group(username)

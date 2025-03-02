@@ -15,14 +15,16 @@ class TournamentPage(tk.Frame):
         self.show_results()
         self.current_group = ""
 
-
     def show_results(self):
         return_code, _ = self.client_socket.send_command(Command.GET_RESULTS)
         if return_code == Codes.OK:
             self.client_socket.receive_file(pathlib.Path(f"results.json"))
 
-        with open("results.json", "r") as file:
-            self.games = json.load(file)
+        try:
+            with open("results.json", "r") as file:
+                self.games = json.load(file)
+        except Exception as e:
+            return
         columns = ("Group", "Total Score", "Wins", "Losses", "Draws")
         self.tree = ttk.Treeview(self, columns=columns, show="headings")
         self.tree.heading("Group", text="Group")
@@ -57,9 +59,8 @@ class TournamentPage(tk.Frame):
         for group in self.games:
             if group != group_name:
                 download_button = tk.Button(self.details_window, text=f"{group} download",
-                                            command=lambda g1=group_name,g=group: self.download_game(g1, g))
+                                            command=lambda g1=group_name, g=group: self.download_game(g1, g))
                 download_button.pack(pady=5)
-
 
     def download_game(self, group_name, enemy_name):
         self.client_socket.send_command(Command.DOWNLOAD_RESULTS_INFO, details=f"{group_name}|{enemy_name}")

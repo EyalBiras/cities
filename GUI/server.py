@@ -1,19 +1,19 @@
 import socket
 import threading
-import pathlib
 
-import networking.network_code
-from db.db import DB
-from GUI.networking.server_socket import ServerSocket
 from GUI.networking import SocketWrapper
+from GUI.networking.server_socket import ServerSocket
+from db.db import DB
+
 
 def handle_client(client_socket, db):
     s = ServerSocket(SocketWrapper(client_socket), db)
     while True:
-        message = s.receive_message()
-        if message is None:
+        username, command = s.receive_message()
+        if username == "EXIT" and command == "EXIT":
             break
-        print(f"details: {message}")
+        print(f"details: \n\t{username=}\n\t{command=}")
+
 
 host = '127.0.0.1'
 port = 8080

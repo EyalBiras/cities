@@ -1,10 +1,10 @@
 import pathlib
 import re
 import tkinter as tk
-from tkinter import messagebox
 
 from GUI.db.group import Group
 from GUI.networking import ClientSocket, Codes, Command
+
 
 class BattlePage(tk.Frame):
     def __init__(self, client_socket: ClientSocket, *args, **kwargs):
@@ -22,6 +22,7 @@ class BattlePage(tk.Frame):
         self.battle_button = tk.Button(self, text="Battle", font=("Arial", 12), command=self.battle)
         self.battle_button.pack(pady=10)
         self.show_available_groups()
+        self.buttons = []
         self.show_battles()
 
     def show_battles(self):
@@ -29,15 +30,19 @@ class BattlePage(tk.Frame):
         if m != Codes.HAS_GROUP:
             return
         _, m = self.client_socket.send_command(Command.GET_BATTLES)
-        group_files = m.split("|")
-        battles = []
-        for group_file in group_files:
-            group, f = group_file.split(":")
-            battles.append([group, f.split(",")])
-        print(f"{battles=}")
-        for name, files in battles:
-            btn = tk.Button(self.name_frame, text=name, command=lambda n=name, f=files: self.show_files(n, f))
-            btn.pack(fill=tk.X, pady=2)
+        try:
+            group_files = m.split("|")
+            battles = []
+            for group_file in group_files:
+                group, f = group_file.split(":")
+                battles.append([group, f.split(",")])
+            print(f"{battles=}")
+            for name, files in battles:
+                btn = tk.Button(self.name_frame, text=name, command=lambda n=name, f=files: self.show_files(n, f))
+                btn.pack(fill=tk.X, pady=2)
+                self.buttons.append(btn)
+        except Exception as e:
+            return
 
     def show_files(self, group_name, files):
         for btn in self.file_buttons:
@@ -51,27 +56,20 @@ class BattlePage(tk.Frame):
 
     def show_available_groups(self) -> None:
         return_code, groups_message = self.client_socket.send_command(command=Command.GET_GROUPS)
-        print(return_code)
+        return_code, groups_message = self.client_socket.send_command(command=Command.GET_GROUPS_TO_BATTLE)
         print(f"{return_code=}, {groups_message=}")
         _, user_group = self.client_socket.send_command(command=Command.GET_USER_GROUP)
         if return_code != Codes.OK:
             return
 
-        pattern = r"\((\w+),\[(.*?)\],(\w+)\)"
+        self.groups = groups_message.split("|")
+        if user_group in self.groups:
+            self.groups.remove(user_group)
 
-        matches = re.findall(pattern, groups_message)
-        print(matches)
-        self.groups = []
-        for match in matches:
-            group_name, users, owner = match
-            users = users.replace("'", "")
-            users = users.replace(" ", "")
-            if group_name != user_group:
-                self.groups.append(Group(group_name, users.split(","), owner))
 
         self.listbox = tk.Listbox(self, font=("Arial", 14))
         for group in self.groups:
-            self.listbox.insert(tk.END, group.name)
+            self.listbox.insert(tk.END, group)
         self.listbox.pack(pady=10)
 
         self.users_label = tk.Label(self, text="Select a group", font=("Arial", 12), justify="left")
@@ -83,18 +81,21 @@ class BattlePage(tk.Frame):
         if self.l is not None:
             self.l.destroy()
         selected_group_name = self.listbox.get(self.listbox.curselection())
-        self.selected_group = next(group for group in self.groups if group.name == selected_group_name)
-        text = f"Users in {self.selected_group.name}:\nOwner: {self.selected_group.owner}\n"
-        for user in self.selected_group.users:
-            if user != self.selected_group.owner:
-                text += f"{user}\n"
-        self.users_label.config(text=text)
+        self.selected_group = next(group for group in self.groups if group == selected_group_name)
+        # text = f"Users in {self.selected_group.name}:\nOwner: {self.selected_group.owner}\n"
+        # for user in self.selected_group.users:
+        #     if user != self.selected_group.owner:
+        #         text += f"{user}\n"
+        # self.users_label.config(text=text)
 
-    def download_battle(self,group_name, file_name):
+    def download_battle(self, group_name, file_name):
         return_code, _ = self.client_socket.send_command(Command.DOWNLOAD_BATTLE, details=f"{group_name}/{file_name}")
         if return_code == Codes.OK:
             self.client_socket.receive_file(pathlib.Path(f"battles/{group_name}/{file_name}"))
 
     def battle(self):
         print(self.selected_group)
-        return_code, _ = self.client_socket.send_command(Command.BATTLE, details=self.selected_group.name)
+        return_code, _ = self.client_socket.send_command(Command.BATTLE, details=self.selected_group)
+        for button in self.buttons:
+            button.destroy()
+        self.show_battles()

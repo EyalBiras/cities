@@ -1,5 +1,7 @@
 import tkinter as tk
+
 from GUI.networking import ClientSocket
+
 
 class LoginPage(tk.Frame):
     def __init__(self, client_socket: ClientSocket, *args, **kwargs):
@@ -14,12 +16,11 @@ class LoginPage(tk.Frame):
         self.password_label = tk.Label(self, text="Password:")
         self.password_label.pack()
 
-        self. password_entry = tk.Entry(self, show="*")
+        self.password_entry = tk.Entry(self, show="*")
         self.password_entry.pack()
 
         self.login_button = tk.Button(self, text="Login", command=self.validate_login)
         self.login_button.pack()
-
 
     def validate_login(self):
         username = self.username_entry.get()
