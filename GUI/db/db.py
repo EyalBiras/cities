@@ -36,11 +36,11 @@ class DB:
                 self.connection.executemany(
                     "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
                     [
-                        (admin_username, admin_password, 'MegaKnight', 1, NO_GROUP),
-                        ('a1', 'b', NO_GROUP, 0, NO_GROUP),
-                        ('a2', 'b', 'Castli', 1, NO_GROUP),
-                        ('a3', 'b', NO_GROUP, 0, 'MegaKnight'),
-                        ('a5', 'b', NO_GROUP, 0, 'MegaKnight'),
+                        (admin_username, hash_password(admin_password), 'MegaKnight', 1, NO_GROUP),
+                        ('a1', hash_password('b'), NO_GROUP, 0, NO_GROUP),
+                        ('a2', hash_password('b'), 'Castli', 1, NO_GROUP),
+                        ('a3', hash_password('b'), NO_GROUP, 0, 'MegaKnight'),
+                        ('a5', hash_password('b'), NO_GROUP, 0, 'MegaKnight'),
                     ]
                 )
 
