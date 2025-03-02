@@ -1,22 +1,24 @@
 import socket
 import tkinter as tk
-from networking import ClientSocket, SocketWrapper
+
 from GUI.pages import BattlePage
-from GUI.pages import GroupManagementPage
 from GUI.pages import CodePage
+from GUI.pages import GroupManagementPage
 from GUI.pages import LoginPage
-from GUI.pages import TournamentPage
 from GUI.pages import SignUpPage
+from GUI.pages import TournamentPage
+from networking import ClientSocket, SocketWrapper
+
 
 class MainView(tk.Frame):
     def __init__(self, client_socket: ClientSocket, *args, **kwargs):
         tk.Frame.__init__(self, *args, **kwargs)
         self.client_socket = client_socket
-        self.login_page = LoginPage(self.client_socket,self)
-        self.code_page = CodePage(self.client_socket,self)
+        self.login_page = LoginPage(self.client_socket, self)
+        self.code_page = CodePage(self.client_socket, self)
         self.group_page = GroupManagementPage(self.client_socket, self)
-        self.tournament_page = TournamentPage(self.client_socket,self)
-        self.battle_page = BattlePage(self.client_socket,self)
+        self.tournament_page = TournamentPage(self.client_socket, self)
+        self.battle_page = BattlePage(self.client_socket, self)
         self.sign_up_page = SignUpPage(self.client_socket, self)
 
         button_frame = tk.Frame(self)
@@ -31,14 +33,12 @@ class MainView(tk.Frame):
         self.battle_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
         self.sign_up_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
 
-
         login_page_button = tk.Button(button_frame, text="Login", command=self.create_login_page)
         code_page_button = tk.Button(button_frame, text="Code", command=self.create_code_page)
         group_page_button = tk.Button(button_frame, text="Group", command=self.create_group_page)
         tournament_page_button = tk.Button(button_frame, text="Tournament", command=self.create_tournament_page)
         battle_page_button = tk.Button(button_frame, text="Battle", command=self.create_battle_page)
         sign_up_page_button = tk.Button(button_frame, text="sign up", command=self.create_sign_up_page)
-
 
         login_page_button.pack(side="left")
         code_page_button.pack(side="left")
@@ -72,7 +72,7 @@ class MainView(tk.Frame):
 
     def create_code_page(self):
         self.code_page.destroy()
-        self.code_page = CodePage(self.client_socket,self)
+        self.code_page = CodePage(self.client_socket, self)
         self.code_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
 
         self.code_page.lift()

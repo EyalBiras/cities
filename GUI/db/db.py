@@ -2,12 +2,25 @@ import sqlite3 as sql
 import threading
 from GUI.db.group import Group
 from GUI.db.hash_utils import hash_password
+import pathlib
 
 admin_username = "admin"
 admin_password = "admin"
-
+FILE = pathlib.Path(__file__)
+GROUPS_DIRECTORY  = FILE.parent.parent.parent / "groups"
 NO_GROUP = "none"
 
+def verify_group_name(group_name: str) -> bool:
+    if len(group_name) == 0:
+        return False
+    if group_name[0].isdigit():
+        return False
+
+    for letter in group_name:
+        if not (letter.isalpha() or letter.isdigit() or letter == '_'):
+            return False
+
+    return True
 
 class DB:
     def __init__(self):
@@ -15,24 +28,23 @@ class DB:
         self.connection = sql.connect("Users.db", check_same_thread=False)
         with self.connection:
             self.connection.execute(
-                "CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, user_group TEXT, is_owner INTEGER, join_request TEXT)")
-            self.connection.execute(
-                "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
-                (admin_username, admin_password, 'MegaKnight', 1, NO_GROUP))
-            self.connection.execute(
-                "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
-                ('a1', 'b', NO_GROUP, 0, NO_GROUP))
-            self.connection.execute(
-                "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
-                ('a2', 'b', 'Castli', 1, NO_GROUP))
-            self.connection.execute(
-                "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
-                ('a3', 'b', NO_GROUP, 0, 'MegaKnight'))
-            self.connection.execute(
-                "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
-                ('a5', 'b', NO_GROUP, 0, 'MegaKnight'))
+                "CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, user_group TEXT, is_owner INTEGER, join_request TEXT)"
+            )
 
-    def execute_query(self, query: str, params: tuple = ()):
+            cursor = self.connection.execute("SELECT COUNT(*) FROM users")
+            if cursor.fetchone()[0] == 0:
+                self.connection.executemany(
+                    "INSERT INTO users(username, password, user_group, is_owner, join_request) VALUES(?, ?, ?, ?, ?)",
+                    [
+                        (admin_username, admin_password, 'MegaKnight', 1, NO_GROUP),
+                        ('a1', 'b', NO_GROUP, 0, NO_GROUP),
+                        ('a2', 'b', 'Castli', 1, NO_GROUP),
+                        ('a3', 'b', NO_GROUP, 0, 'MegaKnight'),
+                        ('a5', 'b', NO_GROUP, 0, 'MegaKnight'),
+                    ]
+                )
+
+    def execute_query(self, query: str, params: tuple = ()) -> sql.Cursor:
         with self.lock:
             cursor = self.connection.cursor()
             cursor.execute(query, params)
@@ -53,8 +65,14 @@ class DB:
         return True
 
     def create_group(self, username: str, group_name: str) -> None:
+        if not verify_group_name(group_name):
+            return
         self.execute_query("UPDATE users SET user_group = ?, is_owner = 1, join_request = ? WHERE username = ?",
                            (group_name, NO_GROUP, username))
+        (GROUPS_DIRECTORY / group_name / "battles").mkdir(parents=True, exist_ok=True)
+        (GROUPS_DIRECTORY / group_name / "development_code").mkdir(parents=True, exist_ok=True)
+        (GROUPS_DIRECTORY / group_name / "tournament_code").mkdir(parents=True, exist_ok=True)
+
 
     def is_in_group(self, username: str) -> bool:
         cursor = self.execute_query("SELECT user_group FROM users WHERE username=?", (username,))
