@@ -206,6 +206,12 @@ def move_development_to_tournament(group: str) -> None:
 
 def run_tournament():
     games_path = GAMES_BASE_PATH / "games"
+    if games_path.exists() and games_path.is_dir():
+        for item in games_path.iterdir():
+            if item.is_dir():
+                shutil.rmtree(item)
+            else:
+                item.unlink()
     games_path.mkdir(parents=True, exist_ok=True)
 
     t1 = time.perf_counter()
@@ -229,3 +235,4 @@ def run_tournament():
     print(list(GROUPS.glob("*")))
     print(time.perf_counter() - t1)
 
+run_tournament()

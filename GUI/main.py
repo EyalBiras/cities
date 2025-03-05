@@ -52,6 +52,7 @@ class MainView(tk.Frame):
         download_template_button.pack(side="left")
 
         self.log_out_button = tk.Button(button_frame, text="logout", command=self.logout)
+        self.username_label = tk.Label(button_frame)
 
         login_page_button.pack(side="left")
         sign_up_page_button.pack(side="left")
@@ -60,7 +61,10 @@ class MainView(tk.Frame):
         self.buttons2 = [login_page_button, sign_up_page_button]
 
         self.is_admin = False
+        self.username_label.place(x=10, y=20)
+        self.username_label.lift()
         self.login_page.lift()
+
 
     def download_template(self):
         self.client_socket.send_command(Command.DOWNLOAD_TEMPLATE)
@@ -69,6 +73,7 @@ class MainView(tk.Frame):
     def logout(self):
         self.client_socket.username = ""
         self.client_socket.password = ""
+        self.username_label.pack_forget()
         for button in self.buttons:
             button.pack_forget()
         if self.is_admin:
@@ -130,7 +135,7 @@ class MainView(tk.Frame):
 
 
 if __name__ == "__main__":
-    host = '127.0.0.1'
+    host = '10.0.0.8'
     port = 8080
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host, port))

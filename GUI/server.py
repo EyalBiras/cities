@@ -15,7 +15,7 @@ def handle_client(client_socket, db):
         print(f"details: \n\t{username=}\n\t{command=}")
 
 
-host = '127.0.0.1'
+host = '10.0.0.8'
 port = 8080
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind((host, port))

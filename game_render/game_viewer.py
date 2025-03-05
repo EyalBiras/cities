@@ -113,10 +113,18 @@ class GameRender:
                 for group in t["groups"]:
                     print(group)
                     animation_phase = random.randint(0,5)
-                    if group[2] == 1:
-                        group_image = get_group_image("player", group[0])[animation_phase]
+                    if p == "player":
+                        if group[2] == 1:
+                            reflect = False
+                        else:
+                            reflect = True
+                        group_image = get_group_image("player", group[0], reflect=reflect)[animation_phase]
                     else:
-                        group_image = get_group_image("enemy", group[0], reflect=True)[animation_phase]
+                        if group[2] == 1:
+                            reflect = False
+                        else:
+                            reflect = True
+                        group_image = get_group_image("enemy", group[0], reflect=reflect)[animation_phase]
                     size = group_image.size
                     self.display.blit(group_image, group[1])
                     group_info = self.group_font.render(f"Total Soldiers: {group[0]}",
