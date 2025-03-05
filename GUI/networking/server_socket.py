@@ -1,4 +1,5 @@
 import pathlib
+import re
 import shutil
 
 from GUI.db.db import DB
@@ -29,6 +30,10 @@ def is_dir_empty(directory: pathlib.Path) -> bool:
 def get_group_directory(group: str) -> pathlib.Path:
     return BASE_PATH / pathlib.Path(group)
 
+def get_player_enemy(f: pathlib.Path) -> tuple[str, str]:
+    pattern = r"([a-zA-Z0-9_]+)\s+vs\s+([a-zA-Z0-9_]+)-winner-[a-zA-Z0-9_]+\.json\.gzip"
+    match = re.search(pattern, f.name)
+    return match.group(1), match.group(2)
 
 class ServerSocket:
     def __init__(self, server_socket: SocketWrapper, db: DB):
@@ -202,15 +207,17 @@ class ServerSocket:
             group, enemy = details.split("|")
             self.__server_socket.send_message_secure(
                 f"{verification_code}|{message}|{return_code.value}")
+            self.__server_socket.receive_message_secure()
             for f in GAMES_DIRECTORY.glob("*"):
                 file = pathlib.Path(f)
-                if group in file.name and enemy in file.name:
+                if group in get_player_enemy(file) and enemy in get_player_enemy(file):
                     print(file.name)
                     print("hi")
                     return_code = Codes.OK
                     self.__server_socket.send_file(file)
             else:
                 return_code = Codes.NOT_IN_GROUP
+            return username, command
         if command == Command.GET_GROUPS_TO_BATTLE.value:
             for group in BASE_PATH.glob("*"):
                 code = group / "tournament_code"

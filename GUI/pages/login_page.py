@@ -32,6 +32,8 @@ class LoginPage(tk.Frame):
             for button in self.master.buttons:
                 button.pack(side="left")
             self.master.log_out_button.pack(side="right")
+            self.master.username_label.pack(side="right")
+            self.master.username_label.config(text=f"{username}")
             if username == "admin":
                 self.master.is_admin = True
                 self.master.admin_page_button.pack(side="left")
