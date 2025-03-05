@@ -55,6 +55,7 @@ class TournamentPage(tk.Frame):
 
         self.details_window = tk.Toplevel(self)
         self.details_window.title(f"Download Options for {group_name}")
+        self.details_window.geometry("300x100")
 
         for group in self.games:
             if group != group_name:
@@ -65,4 +66,3 @@ class TournamentPage(tk.Frame):
     def download_game(self, group_name, enemy_name):
         self.client_socket.send_command(Command.DOWNLOAD_RESULTS_INFO, details=f"{group_name}|{enemy_name}")
         self.client_socket.receive_file(pathlib.Path(f"tournament/{group_name} vs {enemy_name}.json.gzip"))
-        self.client_socket.receive_file(pathlib.Path(f"tournament/{group_name} vs {enemy_name}.log"))

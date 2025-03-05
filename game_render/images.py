@@ -1,3 +1,4 @@
+import functools
 from pathlib import Path
 
 import numpy as np
@@ -119,7 +120,7 @@ def make_group(image: pygame.Surface, count: int) -> pygame.Surface:
     if count == 6:
         return concat_vertically(concat_horizontally(image, 3), 2)
 
-
+@functools.lru_cache(maxsize=None)
 def get_knight(image_file: Path, size: tuple[int, int] | None = None, reflect: bool = False, count: int = 1) -> list[
     Image]:
     animation = []

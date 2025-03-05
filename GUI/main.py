@@ -1,13 +1,17 @@
+import pathlib
 import socket
 import tkinter as tk
 
+from GUI.networking import Command
 from GUI.pages import BattlePage
 from GUI.pages import CodePage
 from GUI.pages import GroupManagementPage
 from GUI.pages import LoginPage
 from GUI.pages import SignUpPage
 from GUI.pages import TournamentPage
+from GUI.pages.admin_page import AdminPage
 from networking import ClientSocket, SocketWrapper
+
 
 
 class MainView(tk.Frame):
@@ -18,6 +22,7 @@ class MainView(tk.Frame):
         self.code_page = CodePage(self.client_socket, self)
         self.group_page = GroupManagementPage(self.client_socket, self)
         self.tournament_page = TournamentPage(self.client_socket, self)
+        self.admin_page = AdminPage(self.client_socket, self)
         self.battle_page = BattlePage(self.client_socket, self)
         self.sign_up_page = SignUpPage(self.client_socket, self)
 
@@ -32,6 +37,7 @@ class MainView(tk.Frame):
         self.tournament_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
         self.battle_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
         self.sign_up_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
+        self.admin_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
 
         login_page_button = tk.Button(button_frame, text="Login", command=self.create_login_page)
         code_page_button = tk.Button(button_frame, text="Code", command=self.create_code_page)
@@ -39,15 +45,46 @@ class MainView(tk.Frame):
         tournament_page_button = tk.Button(button_frame, text="Tournament", command=self.create_tournament_page)
         battle_page_button = tk.Button(button_frame, text="Battle", command=self.create_battle_page)
         sign_up_page_button = tk.Button(button_frame, text="sign up", command=self.create_sign_up_page)
+        self.admin_page_button = tk.Button(button_frame, text="Admin", command=self.create_admin_page)
+
+
+        download_template_button = tk.Button(button_frame, text="download template", command=self.download_template)
+        download_template_button.pack(side="left")
+
+        self.log_out_button = tk.Button(button_frame, text="logout", command=self.logout)
 
         login_page_button.pack(side="left")
-        code_page_button.pack(side="left")
-        group_page_button.pack(side="left")
-        tournament_page_button.pack(side="left")
-        battle_page_button.pack(side="left")
         sign_up_page_button.pack(side="left")
 
+        self.buttons = [code_page_button, group_page_button, tournament_page_button, battle_page_button]
+        self.buttons2 = [login_page_button, sign_up_page_button]
+
+        self.is_admin = False
         self.login_page.lift()
+
+    def download_template(self):
+        self.client_socket.send_command(Command.DOWNLOAD_TEMPLATE)
+        self.client_socket.receive_file(pathlib.Path("Template.rar"))
+
+    def logout(self):
+        self.client_socket.username = ""
+        self.client_socket.password = ""
+        for button in self.buttons:
+            button.pack_forget()
+        if self.is_admin:
+            self.admin_page_button.pack_forget()
+        for button in self.buttons2:
+            button.pack(side="left")
+        self.log_out_button.pack_forget()
+        self.create_login_page()
+
+
+    def create_admin_page(self):
+        self.admin_page.destroy()
+        self.admin_page = AdminPage(self.client_socket, self)
+        self.admin_page.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
+
+        self.admin_page.lift()
 
     def create_sign_up_page(self):
         self.sign_up_page.destroy()
@@ -96,11 +133,10 @@ if __name__ == "__main__":
     host = '127.0.0.1'
     port = 8080
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # Connecting with Server
     sock.connect((host, port))
     s = ClientSocket(SocketWrapper(sock))
     root = tk.Tk()
     main = MainView(s, root)
     main.pack(side="top", fill="both", expand=True)
-    root.wm_geometry("400x400")
+    root.wm_geometry("700x700")
     root.mainloop()

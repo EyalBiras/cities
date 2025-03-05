@@ -20,8 +20,8 @@ class SocketWrapper:
         return self.__socket.recv(size)
 
     def send_file(self, file_path: pathlib.Path, chunk_size: int = KILO_BYTE) -> Codes:
-        self.send_message_secure(file_path.name)  # Send file name
-        ack = self.receive_message_secure()  # Wait for receiver to confirm
+        self.send_message_secure(file_path.name)
+        ack = self.receive_message_secure()
 
         file_size = file_path.stat().st_size
         total_chunks = (file_size + chunk_size - 1) // chunk_size
@@ -37,11 +37,13 @@ class SocketWrapper:
 
     def receive_file(self, save_file: pathlib.Path = "", chunk_size: int = KILO_BYTE,
                      max_file_size: int = 300 * KILO_BYTE) -> bool:
-        file_name = self.receive_message_secure()  # Receive file name properly
+        file_name = self.receive_message_secure()
+        print(f"{file_name=}")
         save_file = pathlib.Path(save_file or file_name)
 
-        self.send_message_secure(Codes.OK.value)  # Acknowledge file name
+        self.send_message_secure(Codes.OK.value)
         message = self.receive_message_secure()
+        print(f"{message=}")
         chunk_size, num_chunks = message.split("|")
         chunk_size = int(chunk_size)
         num_chunks = int(num_chunks)

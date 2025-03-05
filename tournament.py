@@ -1,6 +1,9 @@
 import json
+import pathlib
 import re
 import shutil
+import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -140,13 +143,11 @@ def battle(group: Path, enemy: Path, games_directory: Path) -> None:
         f.write(
             f"\twith gzip.open(game_file, 'wt', encoding='utf-8') as f:\n")
         f.write(f"\t\tjson.dump(game, f)\n")
-        f.write(f"\twith open('a.txt','w') as f:\n")
-        f.write(f"\t\tf.write('hi')\n")
     print(game_path)
-    with open(game_path, "r") as f:
-        exec(f.read(), {"__name__": "__main__"})
+    # with open(game_path, "r") as f:
+    #     exec(f.read(), {"__name__": "__main__"})
 
-    # subprocess.run([sys.executable, game_path])
+    subprocess.run([sys.executable, game_path])
     game_path.unlink()
 
 
@@ -191,9 +192,9 @@ def run_game(group1: Path, group2: Path, games_directory: str = GAMES_BASE_PATH 
         f.write(f"\twith open(RESULTS_FILE, 'w') as f:\n")
         f.write(f"\t\tjson.dump(results, f, indent=2)\n")
         f.write(f"\n")
-    with open(game_path, "r") as f:
-        exec(f.read(), {"__name__": "__main__"})
-    # subprocess.run([sys.executable, game_path])
+    # with open(game_path, "r") as f:
+    #     exec(f.read(), {"__name__": "__main__"})
+    subprocess.run([sys.executable, game_path])
     print(time.perf_counter() - t)
     game_path.unlink()
 
@@ -227,3 +228,4 @@ def run_tournament():
 
     print(list(GROUPS.glob("*")))
     print(time.perf_counter() - t1)
+
