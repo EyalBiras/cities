@@ -6,7 +6,7 @@ from GUI.networking import Command
 from GUI.networking.constants import KILO_BYTE, INVALID_USERNAME_OR_PASSWORD
 from GUI.networking.network_code import Codes
 from GUI.networking.socket_wrapper import SocketWrapper
-from tournament import battle
+from tournament import battle, run_tournament
 
 DEVELOPMENT_CODE_DIR = "development_code"
 ONE_MEGABYTE = 1048576
@@ -17,8 +17,11 @@ file = pathlib.Path(__file__)
 RESULTS_FILE = file.parent.parent.parent / "results.json"
 
 BASE_PATH = file.parent.parent.parent / "groups"
-print(BASE_PATH)
 GAMES_DIRECTORY = file.parent.parent.parent / "games"
+TEMPLATE_FILE  = file.parent.parent.parent/"Template.rar"
+
+def is_python(f: pathlib.Path) -> bool:
+    return f.name.endswith(".py")
 
 def is_dir_empty(directory: pathlib.Path) -> bool:
     return not (directory.exists() and any(directory.iterdir()))
@@ -41,7 +44,17 @@ class ServerSocket:
         print(f"{username=}, {password=}, {command=}, {details=}")
         verification_code = Codes.OK.value
 
-        if command == Command.SIGN_UP:
+        if command == Command.DOWNLOAD_TEMPLATE.value:
+            verification_code = Codes.OK.value
+            return_code = Codes.OK.value
+            message = Codes.OK.value
+            self.__server_socket.send_message_secure(f"{verification_code}|{message}|{return_code}")
+            self.__server_socket.receive_message_secure()
+            self.__server_socket.send_file(TEMPLATE_FILE)
+            return Codes.OK.value, ""
+
+
+        if command == Command.SIGN_UP.value:
             if self.db.signup_user(username, password):
                 verification_code = Codes.OK.value
                 return_code = Codes.OK.value
@@ -77,12 +90,28 @@ class ServerSocket:
                     if details in game.name:
                         shutil.rmtree(game)
                 battle(group=user_group, enemy=enemy_group, games_directory=games_directory)
+        if command == Command.RUN_TOURNAMENT.value:
+            groups = self.db.get_groups()
+            message = str(len(groups))
+            self.__server_socket.send_message_secure(f"{verification_code}|{message}|{return_code.value}")
+            ack = self.__server_socket.receive_message_secure()
+            print(f"{ack=}")
+            run_tournament()
+            message = Codes.FINISHED.value
+            self.__server_socket.send_message_secure(f"{verification_code}|{message}|{return_code.value}")
+            return username, command
+
         if command == Command.UPLOAD_FILE.value:
+            group = self.db.get_group(username)
+            f = BASE_PATH / group.name / "development_code" / details
+            print(f"{f=}")
             return_code = Codes.OK
             message = ""
             self.__server_socket.send_message_secure(
                 f"{verification_code}|{message}|{return_code.value}")
-            self.__server_socket.receive_file(pathlib.Path("Hi.py"))
+            self.__server_socket.receive_message_secure()
+            self.__server_socket.receive_file(f)
+            self.__server_socket.receive_message_secure()
         if command == Command.GET_GROUPS.value:
             groups = self.db.get_groups()
             message = f"({str(groups[0])}"
@@ -166,7 +195,8 @@ class ServerSocket:
                 group_directory = get_group_directory(group.name) / DEVELOPMENT_CODE_DIR
                 if group_directory.exists():
                     for file_path in group_directory.rglob("*"):
-                        message += f"{pathlib.Path(file_path).name},"
+                        if is_python(pathlib.Path(file_path)):
+                            message += f"{pathlib.Path(file_path).name},"
                     message = message[:-1]
         if command == Command.DOWNLOAD_RESULTS_INFO:
             group, enemy = details.split("|")
@@ -174,8 +204,8 @@ class ServerSocket:
                 f"{verification_code}|{message}|{return_code.value}")
             for f in GAMES_DIRECTORY.glob("*"):
                 file = pathlib.Path(f)
-                print(file.name)
-                if group and enemy in file.name:
+                if group in file.name and enemy in file.name:
+                    print(file.name)
                     print("hi")
                     return_code = Codes.OK
                     self.__server_socket.send_file(file)

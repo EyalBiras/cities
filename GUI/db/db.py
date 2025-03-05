@@ -1,3 +1,4 @@
+import shutil
 import sqlite3 as sql
 import threading
 from GUI.db.group import Group
@@ -85,6 +86,19 @@ class DB:
         return user is not None and bool(user[0])
 
     def leave_group(self, username: str) -> None:
+        if self.is_group_owner(username):
+            group = self.get_group(username)
+            if len(group.users) == 1:
+                path = GROUPS_DIRECTORY / group.name
+                shutil.rmtree(path)
+            else:
+                for user in group.users:
+                    if user != username:
+                        self.execute_query(
+                            "UPDATE users SET is_owner = 1 WHERE username = ?",
+                            (user,))
+                        break
+
         self.execute_query("UPDATE users SET user_group = ?, is_owner = 0, join_request = ? WHERE username = ?",
                            (NO_GROUP, NO_GROUP, username))
 

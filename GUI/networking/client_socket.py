@@ -43,9 +43,7 @@ class ClientSocket:
         return Codes.INVALID_USERNAME_OR_PASSWORD
 
     def send_file(self, file_path: pathlib.Path, chunk_size: int = KILO_BYTE) -> Codes:
-        if self.validate_user():
-            return self.__client_socket.send_file(file_path, chunk_size)
-        return Codes.INVALID_USERNAME_OR_PASSWORD
+        return self.__client_socket.send_file(file_path, chunk_size)
 
     def receive_file(self, file_path: pathlib.Path = "") -> Codes:
         self.__client_socket.receive_file(file_path)
