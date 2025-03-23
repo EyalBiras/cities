@@ -11,72 +11,81 @@ class Player:
         self.__groups = groups
         self.__conquered_cities = []
         self.__lost_cities = []
+        self.__lost = False
 
     @property
-    def groups(self):
+    def lost(self) -> bool:
+        return self.__lost
+
+    @property
+    def groups(self) -> list[Group]:
         return self.__groups
 
     @property
-    def capital_city(self):
+    def capital_city(self) -> Capital | None:
         return self.__capital_city
 
     @property
-    def cities(self):
+    def cities(self) -> list[City]:
         return self.__cities
 
     def update_groups(self) -> None:
-        if internal_update_flag.is_allowed():
-            for group in self.__groups:
-                group.update()
-                if group.turns_till_arrival == 0:
-                    if group.destination in self.cities or group.destination is self.__capital_city:
-                        group.destination.people_amount += group.people_amount
-                    else:
-                        group.destination.people_amount -= group.people_amount
-                        if group.destination.people_amount < 0:
-                            self.__conquered_cities.append(group.destination)
-                    self.__groups.remove(group)
+        if not internal_update_flag.is_allowed():
+            return
+        for group in self.__groups:
+            group.update()
+            if group.turns_till_arrival != 0:
+                continue
+            if group.destination in self.cities or group.destination is self.__capital_city:
+                group.destination.people_amount += group.people_amount
+            else:
+                group.destination.people_amount -= group.people_amount
+                if group.destination.people_amount < 0 and not isinstance(group.destination, Capital):
+                    self.__conquered_cities.append(group.destination)
+            self.__groups.remove(group)
 
     def update_cities(self, actions) -> None:
-        if internal_update_flag.is_allowed():
-            for city in self.__cities:
-                if city.people_amount < 0:
-                    self.__lost_cities.append(city)
-                else:
-                    city.update()
-            for action in actions:
-                try:
-                    if action is None:
-                        continue
-                    city = action[0]
-                    if action[1] == "send":
-                        if city != action[2]:
-                            self.__groups.append(Group(action[3], city, action[2], city.position))
+        if not internal_update_flag.is_allowed():
+            return
+        for city in self.__cities:
+            if city.people_amount < 0:
+                self.__lost_cities.append(city)
+            else:
+                city.update()
+        for action in actions:
+            try:
+                if action is None:
+                    continue
+                city = action[0]
+                if action[1] == "send":
+                    if city != action[2]:
+                        self.__groups.append(Group(action[3], city, action[2], city.position))
 
-                except ValueError:
-                    pass
-
-            if self.__capital_city is not None:
-                if self.__capital_city.people_amount < 0:
-                    self.__capital_city = None
-                else:
-                    self.__capital_city.update()
+            except ValueError:
+                pass
+        if self.__capital_city is not None:
+            if self.__capital_city.people_amount >= 0:
+                self.__capital_city.update()
+            else:
+                self.__lost = True
 
     def update_lost_cities(self) -> None:
-        if internal_update_flag.is_allowed():
-            for city in self.__lost_cities:
-                self.cities.remove(city)
-            self.__lost_cities = []
+        if not internal_update_flag.is_allowed():
+            return
+        for city in self.__lost_cities:
+            self.cities.remove(city)
+        self.__lost_cities = []
 
-    def update_conquered_cities(self):
-        if internal_update_flag.is_allowed():
-            for city in self.__conquered_cities:
-                city.people_amount *= -1
-                print(city.level)
-                if city.level == 0:
-                    city.level = 1
-                self.cities.append(city)
-            self.__conquered_cities = []
+    def update_conquered_cities(self) -> None:
+        if not internal_update_flag.is_allowed():
+            return
+        for city in self.__conquered_cities:
+            city.people_amount *= -1
+            print(city.level)
+            if city.level == 0:
+                city.level = 1
+            self.cities.append(city)
+        self.__conquered_cities = []
 
     def get_state(self):
         if self.__capital_city:

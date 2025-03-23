@@ -16,4 +16,4 @@ class MyBot(Bot):
                 if not sent:
                     capital.send_group(c, c.people_amount + 1)
         for city in game.get_my_cities():
-            city.send_group(game.get_my_city_capital(), city.people_amount - 1)
+            city.send_group(game.get_enemy_city_capital(), city.people_amount - 1)

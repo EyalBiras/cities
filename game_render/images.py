@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pygame
 from PIL import Image, ImageFilter
+
 BLUE = (0, 0, 255)
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
@@ -28,6 +29,7 @@ ENEMY_KNIGHT_FILE = ASSETS_BASE_FILE / "Troops" / "Warrior" / "Red"
 
 NEUTRAL_CITY_FILE = ASSETS_BASE_FILE / "Buildings" / "Tower" / "Tower_yellow.png"
 NEUTRAL_CAPITAL_FILE = ASSETS_BASE_FILE / "Buildings" / "Castle" / "Castle_yellow.png"
+
 
 def load_image(image_path: Path, size: tuple[int, int] | None = None, reflect: bool = False):
     image = pygame.image.load(image_path).convert_alpha()
@@ -92,6 +94,7 @@ def concat_vertically(image: pygame.Surface, count: int) -> pygame.Surface:
         new_surface.blit(image, (0, i * height))
     return new_surface
 
+
 def make_group(image: pygame.Surface, count: int) -> pygame.Surface:
     if count == 1:
         return image
@@ -120,6 +123,7 @@ def make_group(image: pygame.Surface, count: int) -> pygame.Surface:
     if count == 6:
         return concat_vertically(concat_horizontally(image, 3), 2)
 
+
 @functools.lru_cache(maxsize=None)
 def get_knight(image_file: Path, size: tuple[int, int] | None = None, reflect: bool = False, count: int = 1) -> list[
     Image]:
@@ -132,7 +136,7 @@ def get_knight(image_file: Path, size: tuple[int, int] | None = None, reflect: b
 
 def get_group_image(kind: str, people_amount: int, reflect: bool = False):
     KNIGHT_SIZE = (
-    int(get_knight(PLAYER_KNIGHT_FILE)[0].size[0] // 2), int(get_knight(PLAYER_KNIGHT_FILE)[1].size[1] // 2))
+        int(get_knight(PLAYER_KNIGHT_FILE)[0].size[0] // 2), int(get_knight(PLAYER_KNIGHT_FILE)[1].size[1] // 2))
     if people_amount > 5:
         people_amount = 5
     if kind == "player":

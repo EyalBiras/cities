@@ -1,20 +1,23 @@
 import random
 import sys
-import sys
 import time
 from pathlib import Path
-import pygame.freetype
+
 import numpy as np
 import pygame
+import pygame.freetype
 from PIL import Image, ImageFilter
-from log_viewer import LogViewer
-from game_render.images import BLACK, BLUE, RED, GREEN
+
+from cities_game.images import DECORATIONS_DIRECTORY, NEUTRAL_CAPITAL_FILE, NEUTRAL_CITY_FILE, TERRAIN_FILE, \
+    PLAYER_CAPITAL_FILE, PLAYER_CITY_FILE, ENEMY_CAPITAL_FILE, ENEMY_CITY_FILE
+from game_render.images import BLACK, BLUE, RED
 from images import get_group_image
-from cities_game.images import DECORATIONS_DIRECTORY, NEUTRAL_CAPITAL_FILE, NEUTRAL_CITY_FILE, TERRAIN_FILE, PLAYER_CAPITAL_FILE, PLAYER_CITY_FILE, ENEMY_CAPITAL_FILE, ENEMY_CITY_FILE
+from log_viewer import LogViewer
 from map_editor.editor import load_images, load_image
 
 FILE = Path(__file__)
 WINDOW_SIZE = (1920, 1080)
+
 
 def apply_gaussian_blur(pygame_surface):
     arr = pygame.surfarray.array3d(pygame_surface)
@@ -29,7 +32,7 @@ def apply_gaussian_blur(pygame_surface):
 
 
 class GameRender:
-    def __init__(self, game, winner, log_entries = None):
+    def __init__(self, game, winner, log_entries=None):
         WIDTH, HEIGHT = pygame.display.Info().current_w, pygame.display.Info().current_h
         print(WIDTH, HEIGHT)
         pygame.display.set_caption("Map Editor")
@@ -67,9 +70,12 @@ class GameRender:
 
     def render_turn(self):
         self.display.fill((0, 0, 0))
-
-        if self.turn >= len(self.game) - 1:
-            self.turn = len(self.game) - 2
+        mouse_pos = pygame.mouse.get_pos()
+        display_mouse_pos = [0, 0]
+        display_mouse_pos[0] = mouse_pos[0] * (self.display.get_width() // self.screen.get_width())
+        display_mouse_pos[1] = mouse_pos[1] * (self.display.get_height() // self.screen.get_height())
+        if self.turn >= len(self.game):
+            self.turn = len(self.game) - 1
         turn = self.game[self.turn]
         self.display.blit(self.background)
 
@@ -91,28 +97,38 @@ class GameRender:
                     city_image = self.assets[1][1]
                 city_position = city[2]
                 size = city_image.size
+                city_info_surface = self.font.render(f"Total Soldiers: {city[0]}\nLevel: {city[1]}", True, color)
+                self.display.blit(city_info_surface,
+                                  (int(city_position[0]) - size[0] // 2, int(city_position[1]) - size[1] // 2))
                 self.display.blit(city_image,
                                   (int(city_position[0]) - size[0] // 2, int(city_position[1]) - size[1] // 2))
-                city_info_surface = self.font.render(f"Total Soldiers: {city[0]}\nLevel: {city[1]}", True, color)
-                self.display.blit(city_info_surface, (int(city_position[0]) - size[0] // 2, int(city_position[1]) - size[1] // 2))
-
 
             if p != "neutral":
+                capital = t["capital"][0]
                 if p == "player":
-                    capital_image = self.player_assets[0]
+                    if capital[0] >= 0:
+                        capital_image = self.player_assets[0]
+                    else:
+                        color = RED
+                        capital_image = self.enemy_assets[0]
                 elif p == "enemy":
-                    capital_image = self.enemy_assets[0]
+                    if capital[0] >= 0:
+                        capital_image = self.enemy_assets[0]
+                    else:
+                        color = BLUE
+                        capital_image = self.player_assets[0]
                 capital = t["capital"][0]
                 capital_position = t["capital"][0][2]
                 size = capital_image.size
                 self.display.blit(capital_image,
                                   (int(capital_position[0]) - size[0] // 2, int(capital_position[1]) - size[1] // 2))
-                capital_info_surface = self.font.render(f"  Total Soldiers: {capital[0]}\n  Level: {capital[1]}", True, color)
+                capital_info_surface = self.font.render(f"  Total Soldiers: {abs(capital[0])}\n  Level: {capital[1]}", True,
+                                                        color)
                 self.display.blit(capital_info_surface,
                                   (int(capital_position[0]) - size[0] // 2, int(capital_position[1]) - size[1] // 2))
                 for group in t["groups"]:
                     print(group)
-                    animation_phase = random.randint(0,5)
+                    animation_phase = random.randint(0, 5)
                     if p == "player":
                         if group[2] == 1:
                             reflect = False
@@ -128,11 +144,15 @@ class GameRender:
                     size = group_image.size
                     self.display.blit(group_image, group[1])
                     group_info = self.group_font.render(f"Total Soldiers: {group[0]}",
-                                                            True, color)
-                    self.display.blit(group_info,
-                                      (
-                                      int(group[1][0]) - size[0] // 2, int(group[1][1]) - size[1] // 2))
-        if self.turn == len(self.game) - 2:
+                                                        True, color)
+                    if ((int(group[1][0]) - size[0] // 2 - display_mouse_pos[0]) ** 2 + (
+                            (int(group[1][1]) - size[1] // 2) - display_mouse_pos[1]) ** 2) < (
+                            size[0] ** 2 + size[1] ** 2):
+
+                        self.display.blit(group_info,
+                                        (
+                                              int(group[1][0]), int(group[1][1]) - size[1] // 2))
+        if self.turn == len(self.game) - 1:
             text_surface = self.won_font.render(f"{self.winner} Won!", True, (255, 215, 0))
             self.display.blit(text_surface, (WINDOW_SIZE[0] // 2 - 100, WINDOW_SIZE[1] // 2 - 100))
 
@@ -148,7 +168,6 @@ class GameRender:
                     self.turn += 1
                 else:
                     self.render_text("Game Paused", WINDOW_SIZE[0] // 2 - 10, 30, BLACK)
-
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -176,8 +195,6 @@ class GameRender:
                             return
 
             screen_width, screen_height = self.screen.get_size()
-
-
 
             # if self.log_entries:
             #     display = pygame.transform.smoothscale(self.display, (screen_width - 100, screen_height))

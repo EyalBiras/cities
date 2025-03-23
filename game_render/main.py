@@ -20,10 +20,10 @@ class A:
             if log_file:
                 with open(log_file, "r") as f:
                     loaded_log = f.readlines()
-                r_ = GameRender(loaded_data_t["game"], loaded_data_t["winner"], loaded_log[1:])
+                renderer = GameRender(loaded_data_t["game"], loaded_data_t["winner"], loaded_log[1:])
             else:
-                r_ = GameRender(loaded_data_t["game"], loaded_data_t["winner"])
-            r_.run()
+                renderer = GameRender(loaded_data_t["game"], loaded_data_t["winner"])
+            renderer.run()
 
 a = A()
 a.run()
