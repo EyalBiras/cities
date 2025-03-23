@@ -90,7 +90,8 @@ class Menu:
                 text_surface = self.font.render(f"Selected log file: {self.selected_log_file}", True, HIGHLIGHT_COLOR)
                 self.display.blit(text_surface, (0, 20))
             if self.wrong_choice:
-                text_surface = self.font.render(f"You selected the wrong file! these files dont have a matching id!", True, RED)
+                text_surface = self.font.render(f"You selected the wrong file! these files dont have a matching id!",
+                                                True, RED)
                 self.display.blit(text_surface, (0, 40))
             pygame.draw.rect(self.display, (100, 0, 200), self.proceed_button, 2)
             self.display.blit(self.proceed, (0, 100))
@@ -99,18 +100,20 @@ class Menu:
             self.screen.blit(self.display, (0, 0))
             pygame.display.flip()
 
+
 def show_file(file: Path):
     if file.is_dir():
         return True
     return file.name.endswith(".json.gzip") or file.name.endswith(".log")
+
 
 def extract_id_from_log(log_file: Path):
     with open(log_file, "r") as f:
         first_line = f.readline()
     return first_line[first_line.find("]") + 3:].replace("\n", "")
 
+
 def extract_id_from_gzip(game_file: Path):
     with gzip.open(game_file, 'rt', encoding='utf-8') as file:
         loaded_data_t = json.load(file)
     return loaded_data_t["id"]
-

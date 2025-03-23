@@ -201,11 +201,11 @@ class Engine:
             "neutral": self.neutral.get_state()
         })
 
-        if self.player.capital_city is None or self.player_time > TIME_LIMIT:
+        if self.player.lost or self.player_time > TIME_LIMIT:
             self.winner = "enemy"
-            if self.enemy.capital_city is None or self.enemy_time > TIME_LIMIT:
+            if self.enemy.lost or self.enemy_time > TIME_LIMIT:
                 self.winner = "draw"
-        elif self.enemy.capital_city is None or self.enemy_time > TIME_LIMIT:
+        elif self.enemy.lost or self.enemy_time > TIME_LIMIT:
             self.winner = "player"
         if self.turn == 300 and self.winner is None:
             if len(self.player.cities) > len(self.enemy.cities):

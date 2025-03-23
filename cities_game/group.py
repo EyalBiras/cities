@@ -18,27 +18,27 @@ class Group:
         self.__animation_phase = 0
 
     @property
-    def animation_phase(self):
+    def animation_phase(self) -> int:
         return self.__animation_phase
 
     @property
-    def speed(self):
+    def speed(self) -> float:
         return self.__speed
 
     @property
-    def turns_till_arrival(self):
+    def turns_till_arrival(self) -> int:
         return self.__turns_till_arrival
 
     @property
-    def destination(self):
+    def destination(self) -> City:
         return self.__destination
 
     @property
-    def source(self):
+    def source(self) -> City:
         return self.__source
 
     @property
-    def people_amount(self):
+    def people_amount(self) -> int:
         return self.__people_amount
 
     @staticmethod

@@ -17,15 +17,15 @@ class Game:
         self.__logger.addFilter(TurnFilter(self.__turn))
 
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         return self.__logger
 
     @property
-    def enemy(self):
+    def enemy(self) -> Player:
         return self.__enemy
 
     @property
-    def player(self):
+    def player(self) -> Player:
         return self.__player
 
     def get_enemy_cities(self) -> list[City]:
@@ -50,5 +50,5 @@ class Game:
         return self.__neutral.cities
 
     @property
-    def turn(self):
+    def turn(self) -> int:
         return self.__turn
